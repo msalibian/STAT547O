@@ -6,10 +6,10 @@ This repository contains material for a short reading course on Robust Statistic
 
 - Introduction, goals, general setting
 - Linear regression
-   - fixed designs
-   - random designs
-   - M, M+S, tau
-   - Regularized models
+   - Fixed designs
+   - Random designs
+   - M, M+S, tau-estimators
+   - Regularized linear models
 - Multivariate analysis
    - estimation
    - outlier detection
