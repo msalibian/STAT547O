@@ -19,6 +19,10 @@ This repository contains material for a short reading course on Robust Statistic
    - Kernel
    - Splines
    - Additive models, GAMs
+- Functional Data Analysis
+   - FPCA
+   - Outlier detection / Depth
+   - Regression, classification
 - Open / active areas
    - Random / Mixed effects models
    - Spatial statistics
