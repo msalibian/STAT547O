@@ -18,27 +18,29 @@ x <- rnorm(30, mean=3, sd=.5)
 
 We check (sanity check) that the returned values solve
 the desired equation. Note that `tmp$disper` is not
-`mad(x)`, so we compute it here:
+`mad(x)` (the residual scale estimator used to compute
+the location estimator), so we compute it here:
 ```
 si <- mad(x)
 cc <- bisquare(e = .95)
 mean( rhoprime(u=(x-tmp$mu)/si, family='bisquare', cc=cc) )
 ```
-
-What is `tmp$disper` then? It is an M-estimator of the residuals:
+What is `tmp$disper` then? It is an M-scale estimator of the residuals
+(with respect to the M-location estimator, computed with the mad):
 ```
 cc2 <- lmrobdet.control(bb=.5, family='bisquare')$tuning.chi
 mscale(x-tmp$mu, delta=.5, family='bisquare', tuning.chi=cc2)
 ```
-However, this is still not equal to `tmp$disper`, because the code
-does not use the same tuning constant for a 50% breakdown point
-M-scale estimator. Specifically:
+However, this is still not equal to `tmp$disper`! The reason is 
+that `MLocDis` does not use the correct tuning constant for a 
+50% breakdown point M-scale estimator. Specifically, it
+uses `1.56` instead of ``1.547...`:
 ```
 tmp$disper
 mscale(x-tmp$mu, delta=.5, family='bisquare', tuning.chi=1.56)
 ```
 
-Using `robustbase` we rely on the function `huberM` which does
+With the `robustbase` package we can use the function `huberM` which does
 what we want:
 ```
 library(robustbase)
