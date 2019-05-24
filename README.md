@@ -1,4 +1,4 @@
-# RoboCourse
+# Notes towards a short course on modern Robust Statistics
 
 This repository contains material for a short reading course on Robust Statistics (Spring 2019)
 
