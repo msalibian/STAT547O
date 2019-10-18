@@ -1,4 +1,4 @@
-# Notes towards a short course on modern Robust Statistics
+# A short course on modern Robust Statistics
 
 This repository contains material (notes, reading suggestions and topics) for a short
 graduate course on Robust Statistics (Fall 2019).
