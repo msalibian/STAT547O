@@ -26,8 +26,7 @@ graduate course on Robust Statistics (Fall 2019).
     - Functional Data Analysis
          - FPCA; Outlier detection / Depth;
         - Regression, classification
-
-- Open problems (each to a different extent)
+- Somewhat open problems 
     - Random / Mixed effects models
     - Spatial statistics
     - State-space models
