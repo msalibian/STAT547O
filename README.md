@@ -3,6 +3,13 @@
 This repository contains material (notes, reading suggestions and topics) for a short
 graduate course on Robust Statistics (Fall 2019).
 
+
+###### LICENSE
+These notes are released under the 
+"Creative Commons Attribution-ShareAlike 4.0 International" license.
+See the **human-readable version** [here](https://creativecommons.org/licenses/by-sa/4.0/)
+and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
+
 ## Tentative schedule
 
 - Week 1: Oct 22 / 24
