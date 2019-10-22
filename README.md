@@ -6,6 +6,7 @@ graduate course on Robust Statistics (Fall 2019).
 ## Tentative schedule
 
 - Week 1: Oct 22 / 24
+    - [Lecture 1 code](Lecture1.md)
     - Introduction, motivation, goals, general setting
     - Location / scale (**brief**); M estimators, the problem of scale
          - Contamination setting; breakdown point; estimators as functionals, "bias", IF;
@@ -26,7 +27,7 @@ graduate course on Robust Statistics (Fall 2019).
     - Functional Data Analysis
          - FPCA; Outlier detection / Depth;
         - Regression, classification
-- Somewhat open problems 
+- Somewhat open problems
     - Random / Mixed effects models
     - Spatial statistics
     - State-space models
