@@ -176,9 +176,7 @@ importance either:
 ```{r diag, fig.width=7.5, fig.height=7.5}
 m0 <- lm(y~., data=x0)
 par(mfrow=c(2,2))
-plot(m0, which=1)
-plot(m0, which=2)
-plot(m0, which=5)
+plot(m0, which=c(1, 2, 5))
 par(mfrow=c(1,1))
 ```
 
@@ -211,9 +209,7 @@ the robust estimator, where the outliers are
 clearly visible. 
 ```{r robdiag, fig.width=7.5, fig.height=7.5}
 par(mfrow=c(2,2))
-plot(m1, which=1)
-plot(m1, which=2)
-plot(m1, which=4)
+plot(m1, which=c(1, 2, 4))
 par(mfrow=c(1,1))
 ```
 
@@ -240,9 +236,7 @@ Interestingly, a robust fit produces similar diagnostic outputs
 myc <- lmrobdet.control(family='bisquare', efficiency=.85)
 m1 <- lmrobdetMM(Pressure ~ ., data = x, control=myc)
 par(mfrow=c(2,2))
-plot(m1, which=1)
-plot(m1, which=2)
-plot(m1, which=4)
+plot(m1, which=c(1, 2, 4))
 par(mfrow=c(1,1))
 ```
 
