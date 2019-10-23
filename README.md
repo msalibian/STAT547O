@@ -5,7 +5,7 @@ graduate course on Robust Statistics (Fall 2019).
 
 
 ###### LICENSE
-These notes are released under the 
+These notes are released under the
 "Creative Commons Attribution-ShareAlike 4.0 International" license.
 See the **human-readable version** [here](https://creativecommons.org/licenses/by-sa/4.0/)
 and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
@@ -16,8 +16,9 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
     - [Lecture 1 code](Lecture1.md)
     - Introduction, motivation, goals, general setting
     - Location / scale (**brief**); M estimators, the problem of scale
+    - [Lecture 2 code]()
          - Contamination setting; breakdown point; estimators as functionals, "bias", IF;
-    - Linear regression (**brief**)
+        - Linear regression (**brief**)
 - Week 2: Oct 29 / 31
     - Linear regression (**brief**)
         - Fixed designs;  Random designs;  Regularized linear models
