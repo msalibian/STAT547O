@@ -79,6 +79,15 @@ One useful relaxation in practice
 is accepting that the data may not be
 *homogeneous*, i.e. that there may be either
 errors or points that follow a different process. 
+Other possible departures from the assumptions 
+accompanying the model is that the 
+distributions may belong to a similar family 
+(e.g. that the data follow an elliptical
+distribution instead of being Gaussian). 
+Here we will mostly consider the former kind
+of departures, 
+which have been called "gross error" model
+violations.
 
 In this short course we are interested in the problem of 
 performing statistical analysis when the data may contain
@@ -362,17 +371,15 @@ meds <- apply(x, 1, median)
 # M-estimators
 monm <- apply(x, 1, function(a) robustbase::huberM(a, k = 1.345)$mu )
 redm <- apply(x, 1, function(a) RobStatTM::locScaleM(a, psi='bisquare')$mu )
-( mse1 <- mean( mus^2 ) )
-( mse2 <- mean( meds^2 ) )
-( mse3 <- mean( monm^2 ) )
-( mse4 <- mean( redm^2 ) )
+c(MSE.means = mean( mus^2 ), MSE.medians= mean( meds^2 ),
+  MSE.monotoneM = mean( monm^2 ), MSE.redescM = mean( redm^2 ) )
 ```
 Note that the M-estimators do much better than the sample mean, 
 and fairly close to the optimal MLE. 
 It is easy to see then when the sample mean is the optimal
 estimator (for example, when the errors are Gaussian), the
 M-estimators again behave very similarly to the optimal one. 
-```{r mse2}
+```{r mse2, echo=FALSE}
 # When \bar{X}_n is optimal, M-estimators perform almost as well
 n <- 50
 M <- 10000
@@ -383,15 +390,13 @@ meds <- apply(x, 1, median)
 # M-estimators
 monm <- apply(x, 1, function(a) robustbase::huberM(a, k = 1.345)$mu )
 redm <- apply(x, 1, function(a) RobStatTM::locScaleM(a, psi='bisquare')$mu )
-( mse1 <- mean( mus^2 ) )
-( mse2 <- mean( meds^2 ) )
-( mse3 <- mean( monm^2 ) )
-( mse4 <- mean( redm^2 ) )
+c(MSE.means = mean( mus^2 ), MSE.medians= mean( meds^2 ),
+  MSE.monotoneM = mean( monm^2 ), MSE.redescM = mean( redm^2 ) )
 ```
 We repeat the experiment with Student's T errors (df = 4),
 and include the MLE estimator. The conclusion is the same as
 above.
-```{r mse3}
+```{r mse3, echo=FALSE}
 n <- 100
 M <- 5000
 set.seed(123)
@@ -402,11 +407,9 @@ mles <- apply(x, 1, function(a) MASS::fitdistr(a, 't', df=4)$estimate[1] )
 # M-estimators
 monm <- apply(x, 1, function(a) robustbase::huberM(a, k = 1.345)$mu )
 redm <- apply(x, 1, function(a) RobStatTM::locScaleM(a, psi='bisquare')$mu )
-( mse1 <- mean( mus^2 ) )
-( mse2 <- mean( meds^2 ) )
-( mse3 <- mean( monm^2 ) )
-( mse4 <- mean( redm^2 ) )
-( mse5 <- mean( mles^2 ) )
+c(MSE.means = mean( mus^2 ), MSE.medians= mean( meds^2 ),
+  MSE.mles = mean( mles^2 ), 
+  MSE.monotoneM = mean( monm^2 ), MSE.redescM = mean( redm^2 ) )
 ```
 Finally, if we use a "gross error"-type departure from a T-4 model, 
 the results are the same.
@@ -429,11 +432,9 @@ mles <- apply(x, 1, function(a) MASS::fitdistr(a, 't', df=4)$estimate[1] )
 # M-estimators
 monm <- apply(x, 1, function(a) robustbase::huberM(a, k = 1.345)$mu )
 redm <- apply(x, 1, function(a) RobStatTM::locScaleM(a, psi='bisquare')$mu )
-( mse1 <- mean( mus^2 ) )
-( mse2 <- mean( meds^2 ) )
-( mse3 <- mean( monm^2 ) )
-( mse4 <- mean( redm^2 ) )
-( mse5 <- mean( mles^2 ) )
+c(MSE.means = mean( mus^2 ), MSE.medians= mean( meds^2 ),
+  MSE.mles = mean( mles^2 ), 
+  MSE.monotoneM = mean( monm^2 ), MSE.redescM = mean( redm^2 ) )
 ```
 
 
