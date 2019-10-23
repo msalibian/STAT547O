@@ -163,6 +163,29 @@ plot(a, which=c(1, 2, 4), id.n=4)
 par(mfrow=c(1,1))
 ```
 
+The function `lmrobdetMM` in package `RobStatTM` implements
+a different starting point for the iterative 
+algorithm that computes the S-estimator. Instead of using
+data-dependent random starts, a few deterministic starting
+points are considered. 
+The code below compares the resulting fit on the `stackloss` data:
+```{r stackloss5, fig.width=7.5, fig.height=7.5}
+library(RobStatTM)
+set.seed(123)
+myc <- lmrobdet.control(family='bisquare', efficiency=.85)
+a.det <- lmrobdetMM(stack.loss ~ ., data=stackloss, control=myc)
+par(mfrow=c(2,2))
+plot(a.det, which=c(1, 2, 4), id.n=4)
+par(mfrow=c(1,1))
+```
+
+We see that in this case, both estimators yield essentially
+the same fit
+```{r stackcomp}
+cbind(lmrob=coef(a), lmrobdetMM=coef(a.det))
+```
+
+
 
 #### Choosing the score / loss function
 
