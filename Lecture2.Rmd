@@ -44,8 +44,8 @@ estimators have bounded influence function, but may have
 a very low breakdown point (as low as $$1/p$$, where $$p$$
 is the number of features) if high-leverale outliers are
 present. A solution is to use a bounded loss function, 
-which results in a re-descending score function&emdash;that
-is a score function $$\psi(t)$$ that is zero for 
+which results in a re-descending score function&mdash;a 
+score function $$\psi(t)$$ that is zero for 
 $$|t| > c$$ for some $$c > 0$$. 
 Note that bounded loss functions are necessarily non-convex,
 and that the optimization problem that defines these estimators 
@@ -69,14 +69,99 @@ compute a robust regression estimator we need a robust residual
 scale estimator. But to compute 
 a robust residual
 scale estimator we need a robust regression estimator (in order
-to obtain reliable residuals). S-estimators (below) will
-help break this impasse. 
+to obtain reliable residuals). S-estimators (below) can 
+break this impasse. 
 
 ## S-estimators
 
-## M-estimators with a preliminary scale
+S-estimators are defined as the regression coefficients 
+that result in residuals that minimize a (robust) 
+of scale. In particular, we use M-estimators of scale, because
+they are relatively easier to minimize than
+would be the case if used others (e.g. MAD). 
+These regression estimators can be tuned to have high-breakdown
+point, but their efficiency is typically low. This is not
+a concern, as the resulting residual scale estimator is used
+to compute an M-estimator of regression that can be tuned to have
+high-efficiency. 
 
 #### Computational challenges
+
+S-estimators can be difficult to compute. They are defined as
+the point at which a typically non-convex function attains its
+minimum. The loss function that needs to be minimized is only
+defined implicitly (as the solution to a non-linear equation). 
+However, its gradient can be computed explicitly, and iterative
+algorithms that decrease the objective function at each step
+exist ([SB and Yohai, 2006](http://dx.doi.org/10.1198/106186006X113629)).
+The main computational bottleneck is the need for a "good" 
+starting point. Data-dependent random starts have been used 
+for a long time. This approach is implemented in the function 
+`lmrob` of the package `robustbase`. 
+
+Here is a simple example, using the well-known 
+stack loss data (see `help(stackloss)` for more information
+on these data). 
+Note that the main objective of `lmrob()` is to compute the
+subsequent M-estimator, 
+the S-estimator is included in one entry (`$init.S`) of 
+the list returned by `lmrob()`. 
+```{r stackloss}
+data(stackloss)
+set.seed(123)
+a <- robustbase::lmrob(stack.loss ~ ., data=stackloss)
+Sest <- a$init.S
+coef(Sest)
+```
+We can look at the fitted vs. residuals plot, and easily
+identify 4 potential outliers. 
+```{r stackloss2, fig.width=6, fig.height=6}
+Sest$scale # same as a$scale
+plot(fitted(Sest), resid(Sest), pch=19, cex=1.1, 
+     xlab='Fitted values', ylab='Residuals')
+abline(h=Sest$scale*2.5*c(-1, 0, 1), lty=2)
+n <- length(resid(Sest))
+labels.id <- paste(1L:n)
+iid <- 1:4
+show.r <- sort.list(abs(resid(Sest)), decreasing = TRUE)[iid]
+text(fitted(Sest)[show.r]-1.5, resid(Sest)[show.r], 
+     show.r, cex = 1.1, xpd = TRUE, offset = 0.25)
+```
+
+## M-estimators with a preliminary scale
+
+The function `lmrob` in package `robusbase` implements
+M-estimators with a re-descending score (bounded loss) function,
+computed using a preliminary residual scale estimator 
+(an S-estimator as above). This implementation uses data-dependent
+random starts for the S-estimator. 
+```{r stackloss3, fig.width=7.5, fig.height=7.5}
+set.seed(123)
+a <- robustbase::lmrob(stack.loss ~ ., data=stackloss)
+par(mfrow=c(2,2))
+plot(a, which=c(1, 2, 4))
+par(mfrow=c(1,1))
+```
+
+Note that the M-estimator identifies fewer outliers than
+the S-estimator. This is because, by default, the 
+M-estimator is tuned to have high-efficiency (95% if the
+errors have a Gaussian distribution), and this induces
+a relatively high asymptotic bias. If we reduce the
+efficiency to 85%, then the M-estimator resembles
+the S- one. We use the function `RobStatTM::bisquare()`
+to compute the tuning constant the corresponds to 
+a desired efficiency, for regression estimators
+computed using Tukey's bisquare loss function. 
+```{r stackloss4, fig.width=7.5, fig.height=7.5}
+library(robustbase)
+set.seed(123)
+myc <- lmrob.control(tuning.psi=RobStatTM::bisquare(.85))
+a <- lmrob(stack.loss ~ ., data=stackloss, control=myc)
+par(mfrow=c(2,2))
+plot(a, which=c(1, 2, 4), id.n=4)
+par(mfrow=c(1,1))
+```
 
 
 #### Choosing the score / loss function
