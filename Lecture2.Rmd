@@ -184,6 +184,17 @@ the same fit
 ```{r stackcomp}
 cbind(lmrob=coef(a), lmrobdetMM=coef(a.det))
 ```
+The least squares fit only identifies a single
+potential mild outlier (observation 21), and the
+regression coefficients are somewhat different from
+the robust ones (specially for `Water.Temp` and `Acid.Conc.`)
+```{r stackloss.ls, fig.width=7.5, fig.height=7.5}
+a.ls <- lm(stack.loss ~ ., data=stackloss)
+par(mfrow=c(2,2))
+plot(a.ls, which=c(1, 2, 5))
+par(mfrow=c(1,1))
+cbind(ls=coef(a.ls), lmrob=coef(a), lmrobdetMM=coef(a.det))
+```
 
 
 

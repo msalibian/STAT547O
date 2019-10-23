@@ -194,4 +194,27 @@ cbind(lmrob=coef(a), lmrobdetMM=coef(a.det))
     ## Water.Temp    0.54460331   0.54461166
     ## Acid.Conc.   -0.07326852  -0.07355833
 
+The least squares fit only identifies a single potential mild outlier
+(observation 21), and the regression coefficients are somewhat different
+from the robust ones (specially for `Water.Temp` and `Acid.Conc.`)
+
+``` r
+a.ls <- lm(stack.loss ~ ., data=stackloss)
+par(mfrow=c(2,2))
+plot(a.ls, which=c(1, 2, 5))
+par(mfrow=c(1,1))
+```
+
+![](Lecture2_files/figure-gfm/stackloss.ls-1.png)<!-- -->
+
+``` r
+cbind(ls=coef(a.ls), lmrob=coef(a), lmrobdetMM=coef(a.det))
+```
+
+    ##                      ls        lmrob   lmrobdetMM
+    ## (Intercept) -39.9196744 -37.56200568 -37.58384225
+    ## Air.Flow      0.7156402   0.81777030   0.81860785
+    ## Water.Temp    1.2952861   0.54460331   0.54461166
+    ## Acid.Conc.   -0.1521225  -0.07326852  -0.07355833
+
 #### Choosing the score / loss function
