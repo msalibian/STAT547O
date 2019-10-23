@@ -26,7 +26,8 @@ One useful relaxation in practice is accepting that the data may not be *homogen
 
 In this short course we are interested in the problem of performing statistical analysis when the data may contain atypical observations. These atypical points may be "errors" (due to recording mistakes, equipment malfunction, etc.) or may be due to the presence of observations that follow a different stochastic phenomenon from the one generating the majority of the data. Generally our interest is the latter. Detecting (accurately identifying) potential "outliers" in the training set is also a common goal of Robust Statistics. Finally, we will also consider the problem of obtaining reliable predictions on future ("good") data when the training set may have atypical points.
 
-### A very personal "agenda" for this course
+A very personal "agenda" for this course
+----------------------------------------
 
 Rather than attempting a thorough, deep and exhaustive discussion of (necessarily) robust methods for a few simple models, in this notes I will try to illustrate the main current ideas and approaches as applied to models beyond univariate or multivariate location/scale and linear regression models.
 
@@ -38,11 +39,12 @@ For a detailed treatment of the basic concepts and techniques in Robust Statisti
 
 > Maronna, R. A., Martin, R.D., Yohai, V.J. and Salibian-Barrera, M. Wiley Online Library. (2019). Robust statistics: Theory and methods (with R) (Second;2; ed.). Hoboken, NJ: WIley. <doi:10.1002/9781119214656> [UBC Library link](http://tinyurl.com/yy4heaad)
 
-### Two simple examples
+Two simple linear regression examples
+-------------------------------------
 
 We first start with a simple synthetic example, where we know the "truth", to illustrate the different robustness properties of some well-known estimators (LS, L1 (aka quantile regression), M and MM). We will then use a popular real example to compare the performance of a robust estimator with that of the classical least squares in terms of their prediction accuracy.
 
-#### A synthetic toy example
+#### A synthetic toy example (diagnostics and estimation)
 
 This example will show that
 
@@ -146,7 +148,7 @@ par(mfrow=c(1,1))
 
 ![](Lecture1_files/figure-markdown_github/robdiag-1.png)
 
-#### The Airfoil Self-Noise Data Set
+#### The Airfoil Self-Noise Data Set (prediction)
 
 The Airfoil Self-Noise Data Set is available at [the UCI repository](https://archive.ics.uci.edu/ml/datasets/Airfoil+Self-Noise). There are
 *n* = 1503
@@ -234,16 +236,14 @@ boxplot(rmspe.m0, rmspe.m1, col=c('grey70', 'tomato3'),
 
 ![](Lecture1_files/figure-markdown_github/rmspe-1.png)
 
-### Contamination setting; Functionals, "bias", BP, IF;
-
-Brief discussion of location / scale models
-===========================================
-
-### M estimators of location & scale; BP, IF & asymptotic distribution
+Examples of M-estimators for simple location / scale models (accuracy / efficiency)
+-----------------------------------------------------------------------------------
 
 If we consider a simple location model, with symmetric errors, i.e.
 *Y* = *μ* + *ε*
 , then an obvious estimator (that does not seem to rely on any distributional assumptions) is the sample mean. It is easy to see that this estimator is not robust. We discussed in class the families of M-estimators with monotone and re-descending score functions. These are implemented in the functions `robustbase::huberM` and `RobStatTM::locScaleM`, respectively. Although both of these use a preliminary residual scale estimator, `locSCaleM` returns, as residual scale estimator, an M-scale of the residuals from the final location estimator, whereas `huberM` returns the auxiliar residual scale estimator (typically the MAD of the observations).
+
+#### Gross-error outliers
 
 To illustrate their use, we look at the `flour` data. More information is available from the corresponding help page.
 
@@ -283,11 +283,15 @@ boxplot(x, x0, col=c('gray70', 'tomato3'), #ylim=c(-5, 5),
 
 ![](Lecture1_files/figure-markdown_github/location2-1.png)
 
+### M-estimators are generally not optimal, but often "pretty good", and rarely "bad"
+
+Below we illustrate what the section title says.
+
+#### Laplace errors (M- vs MLE (median))
+
 Note that the good properties of the sample mean as an estimator for the population mean only hold under strict distributional assumptions. Even for symmetric errors, the sample mean may be highly inefficient (high variance). For example, if the errors have heavier tails than gaussian (double exponential, say), then the sample mean can perform significantly worse than the MLE (which, for the Laplace / double exponential case, is the sample median).
 
-Robust estimators try to find estimation methods that perform well in a variety of situations, will typically not be optimal, but will generally be good enough.
-
-The code below contains simple Monte Carlo experiments comparing the efficiency (MSE) of 4 natural estimators when the data follow a Laplace distribution. We consider 10,000 samples of size 50, and compare the Monte Carlo MSE.
+Robust estimators try to find estimation methods that perform well in a variety of situations, will typically not be optimal, but will generally be good enough. The code below contains simple Monte Carlo experiments comparing the efficiency (MSE) of 4 natural estimators when the data follow a Laplace distribution. We consider 10,000 samples of size 50, and compare the Monte Carlo MSE.
 
 ``` r
 library(rmutil)
@@ -307,15 +311,23 @@ c(MSE.means = mean( mus^2 ), MSE.medians= mean( meds^2 ),
     ##     MSE.means   MSE.medians MSE.monotoneM   MSE.redescM 
     ##    0.04064916    0.02440045    0.02945906    0.02966647
 
-Note that the M-estimators do much better than the sample mean, and fairly close to the optimal MLE. It is easy to see then when the sample mean is the optimal estimator (for example, when the errors are Gaussian), the M-estimators again behave very similarly to the optimal one.
+Note that the M-estimators do much better than the sample mean, and fairly close to the optimal MLE.
+
+#### Gaussian errors (M- vs MLE(mean))
+
+It is easy to see then when the sample mean is the optimal estimator (for example, when the errors are Gaussian), the M-estimators again behave very similarly to the optimal one.
 
     ##     MSE.means   MSE.medians MSE.monotoneM   MSE.redescM 
     ##    0.02040604    0.03090177    0.02150873    0.02170929
+
+#### T4 errors (M- vs MLE)
 
 We repeat the experiment with Student's T errors (df = 4), and include the MLE estimator. The conclusion is the same as above.
 
     ##     MSE.means   MSE.medians      MSE.mles MSE.monotoneM   MSE.redescM 
     ##    0.01976465    0.01763782    0.01394326    0.01425379    0.01432138
+
+#### Gross error oultiers ("point contamination") (M- vs all)
 
 Finally, if we use a "gross error"-type departure from a T-4 model, the results are the same.
 
