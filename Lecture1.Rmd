@@ -188,7 +188,7 @@ However, the estimated regression coefficients are
 very different from the true ones
 (1, 2, 1, 1, 1, 0)
 ```{r lscoef}
-c(LS=coef(m0), Truth=c(0,1, 2, 1, 1, 1, 0))
+cbind(LS=coef(m0), Truth=c(0,1, 2, 1, 1, 1, 0))
 ```
 We now compare the estimated regression 
 coefficients obtained with 3 other methods:

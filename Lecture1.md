@@ -105,15 +105,17 @@ par(mfrow=c(1,1))
 Note that all the Cook distances are below 0.15, for example. However, the estimated regression coefficients are very different from the true ones (1, 2, 1, 1, 1, 0)
 
 ``` r
-c(LS=coef(m0), Truth=c(0,1, 2, 1, 1, 1, 0))
+cbind(LS=coef(m0), Truth=c(0,1, 2, 1, 1, 1, 0))
 ```
 
-    ## LS.(Intercept)          LS.V1          LS.V2          LS.V3          LS.V4 
-    ##    -0.44554207    -0.51498293     1.05890198    -0.25125929     0.06335662 
-    ##          LS.V5          LS.V6         Truth1         Truth2         Truth3 
-    ##     0.07413599    -0.77788104     0.00000000     1.00000000     2.00000000 
-    ##         Truth4         Truth5         Truth6         Truth7 
-    ##     1.00000000     1.00000000     1.00000000     0.00000000
+    ##                      LS Truth
+    ## (Intercept) -0.44554207     0
+    ## V1          -0.51498293     1
+    ## V2           1.05890198     2
+    ## V3          -0.25125929     1
+    ## V4           0.06335662     1
+    ## V5           0.07413599     1
+    ## V6          -0.77788104     0
 
 We now compare the estimated regression coefficients obtained with 3 other methods: a redescending-M estimator, an MM-estimator, and the L1-estimator (which is a quantile regression estimator). We will later see in the course that these estimators have different robustness properties.
 
