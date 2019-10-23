@@ -19,9 +19,10 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
     - [Lecture 2 code]()
          - Contamination setting; breakdown point; estimators as functionals, "bias", IF;
         - Linear regression (**brief**)
+        - Fixed designs;  Random designs;  Regularized linear models
 - Week 2: Oct 29 / 31
     - Linear regression (**brief**)
-        - Fixed designs;  Random designs;  Regularized linear models
+        - Cont'd
 - Week 3: Nov 5 / 7
     - Non-parametric regression;  Kernel; Splines; Additive Models
     - GLM, GAM, GPLAM
