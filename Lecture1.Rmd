@@ -172,11 +172,13 @@ pairs(x0)
 
 Standard diagnostic plots do not flag anything of 
 importance either:
-```{r diag}
+```{r diag, fig.width=7.5, fig.height=7.5}
 m0 <- lm(y~., data=x0)
+par(mfrow=c(2,2))
 plot(m0, which=1)
 plot(m0, which=2)
 plot(m0, which=5)
+par(mfrow=c(1,1))
 ```
 
 Note that all the Cook distances are below 0.15, 
@@ -201,10 +203,12 @@ TRUTH=c(0, 1, 2, 1, 1, 1, 0))
 We can also compare the diagnostic plots obtained with
 the robust estimator, where the outliers are
 clearly visible. 
-```{r robdiag}
+```{r robdiag, fig.width=7.5, fig.height=7.5}
+par(mfrow=c(2,2))
 plot(m1, which=1)
 plot(m1, which=2)
 plot(m1, which=4)
+par(mfrow=c(1,1))
 ```
 
 
@@ -217,21 +221,25 @@ There are $$n = 1503$$ observations and $$p = 5$$ explanatory
 variables. The response is `Pressure`. 
 A classical fit for a linear regression model does not 
 suggest any immediate problem.
-```{r diag.air}
+```{r diag.air, fig.width=7.5, fig.height=7.5}
 x <- read.table('airfoil_self_noise.dat', sep='\t', header=TRUE)
 m0 <- lm(Pressure ~ . , data=x)
+par(mfrow=c(2,2))
 plot(m0, which=1)
 plot(m0, which=2)
 plot(m0, which=5)
+par(mfrow=c(1,1))
 ```
 
 Interestingly, a robust fit produces similar diagnostic outputs
-```{r diag.air.rob}
+```{r diag.air.rob, fig.width=7.5, fig.height=7.5}
 myc <- lmrobdet.control(family='bisquare', efficiency=.85)
 m1 <- lmrobdetMM(Pressure ~ ., data = x, control=myc)
+par(mfrow=c(2,2))
 plot(m1, which=1)
 plot(m1, which=2)
 plot(m1, which=4)
+par(mfrow=c(1,1))
 ```
 
 Although most of the estimated regression coefficients 

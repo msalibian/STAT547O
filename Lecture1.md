@@ -161,22 +161,14 @@ Standard diagnostic plots do not flag anything of importance either:
 
 ``` r
 m0 <- lm(y~., data=x0)
+par(mfrow=c(2,2))
 plot(m0, which=1)
+plot(m0, which=2)
+plot(m0, which=5)
+par(mfrow=c(1,1))
 ```
 
 ![](Lecture1_files/figure-gfm/diag-1.png)<!-- -->
-
-``` r
-plot(m0, which=2)
-```
-
-![](Lecture1_files/figure-gfm/diag-2.png)<!-- -->
-
-``` r
-plot(m0, which=5)
-```
-
-![](Lecture1_files/figure-gfm/diag-3.png)<!-- -->
 
 Note that all the Cook distances are below 0.15, for example. However,
 the estimated regression coefficients are very different from the true
@@ -217,22 +209,14 @@ We can also compare the diagnostic plots obtained with the robust
 estimator, where the outliers are clearly visible.
 
 ``` r
+par(mfrow=c(2,2))
 plot(m1, which=1)
+plot(m1, which=2)
+plot(m1, which=4)
+par(mfrow=c(1,1))
 ```
 
 ![](Lecture1_files/figure-gfm/robdiag-1.png)<!-- -->
-
-``` r
-plot(m1, which=2)
-```
-
-![](Lecture1_files/figure-gfm/robdiag-2.png)<!-- -->
-
-``` r
-plot(m1, which=4)
-```
-
-![](Lecture1_files/figure-gfm/robdiag-3.png)<!-- -->
 
 #### The Airfoil Self-Noise Data Set
 
