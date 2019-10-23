@@ -143,11 +143,12 @@ This example will show that
 Our example contains $$n = 200$$ observations with $$p = 6$$
 explanatory variables. The regression model is $$Y = 
 V1 + 2*V2 + V3 + V4 + V5 + \varepsilon$$, where 
-$$\varepsilon ~ N(0, 1.7)$$. Hence, the true vector of regression 
-coefficients is (1, 2, 1, 1, 1, 0) and the true intercept is 
-zero. The explanatory variables are all independent $$N(0,1)$$ 
-random variables. 
-The following code generates the data
+$$\varepsilon$$ follows a $$N(0, 1.7)$$ distribution. 
+Hence, the true vector of regression 
+coefficients is `(1, 2, 1, 1, 1, 0)` and the true intercept is 
+zero. The explanatory variables are all independent standard
+normal random variables. I used the following code 
+to generate the data
 ```{r generate}
 n <- 200
 p <- 6
@@ -155,8 +156,8 @@ set.seed(123)
 x0 <- as.data.frame(matrix(rnorm(n*p), n, p))
 x0$y <- with(x0, V1 + 2*V2 + V3 + V4 + V5 + rnorm(n, sd=1.7))
 ```
-We now add 20 outliers (for a total proportion of 
-atypical observations of 20/200 = 10%).
+We now replace the last 20 observations
+with outliers (for a total proportion of atypical observations of 20/200 = 10%).
 ```{r add outliers}
 eps <- .1
 n1 <- ceiling(n*(1-eps))
@@ -166,7 +167,7 @@ x0$y[n1:n] <- rnorm(n-n1+1, mean=-7, sd=1.7)
 These atypical observations cannot be seen easily in 
 a pairwise plot, specially if one does not know 
 in advance that they are present:
-```{r pairs, message=FALSE, warning=FALSE}
+```{r pairs, message=FALSE, warning=FALSE, fig.width=7.5, fig.height=7.5}
 pairs(x0)
 ```
 
@@ -187,18 +188,23 @@ However, the estimated regression coefficients are
 very different from the true ones
 (1, 2, 1, 1, 1, 0)
 ```{r lscoef}
-coef(m0)
+c(LS=coef(m0), Truth=c(0,1, 2, 1, 1, 1, 0))
 ```
 We now compare the estimated regression 
-coefficients obtained with other methods:
+coefficients obtained with 3 other methods:
+a redescending-M estimator, an MM-estimator,
+and the L1-estimator (which is a quantile
+regression estimator). We will later see in
+the course that these estimators 
+have different robustness properties. 
 ```{r compare}
 library(RobStatTM)
 myc <- lmrobdet.control(family='bisquare', efficiency=.85)
 m1 <- lmrobdetMM(y~., data=x0, control=myc)
 m2 <- lmrobM(y~., data=x0, control=myc)
 m3 <- quantreg::rq(y~., data=x0)
-cbind(LS=coef(m0), MM=coef(m1), M=coef(m2), L1=coef(m3),
-TRUTH=c(0, 1, 2, 1, 1, 1, 0))
+cbind(Truth=c(0, 1, 2, 1, 1, 1, 0),
+      LS=coef(m0), MM=coef(m1), M=coef(m2), L1=coef(m3))
 ```
 We can also compare the diagnostic plots obtained with
 the robust estimator, where the outliers are
@@ -210,8 +216,6 @@ plot(m1, which=2)
 plot(m1, which=4)
 par(mfrow=c(1,1))
 ```
-
-
 
 #### The Airfoil Self-Noise Data Set
 
@@ -259,15 +263,25 @@ at the mean squared prediction error of the 95% smallest residuals
 for each estimator. In other words, we
 will take the average of the squared prediction errors 
 after removing the 5% largest of them (in absolute value). 
-The boxplots for the prediction errors (for clean data)
-associated with the LS and the MM estimators are below. 
-```{r rmspe, cache=TRUE}
+We use the following function to compute the `alpha-trimmed`
+mean of squared prediction errors:
+```{r tmspe.function}
 tmspe <- function(e, alpha=.1) {
   n <- length(e)
   se <- sort(abs(e))[1:floor(n*(1-alpha))]
   return(mean(se^2))
 }
-
+```
+We now use 100 runs of 5-fold CV to
+compare the 5%-trimmed mean of squared prediction errors.
+The boxplots for the 100 estimated prediction errors 
+associated with the LS and the MM estimators are below. 
+Note that these are estimates of prediction errors 
+when applied to non-atypical observations. We are 
+generally interested in predicting well observations
+coming from the population of interest, and not the
+unusual (outlying) ones. 
+```{r rmspe, cache=TRUE}
 myc <- lmrobdet.control(family='bisquare', efficiency=.85)
 n <- nrow(x)
 M <- 100
@@ -445,10 +459,6 @@ c(MSE.means = mean( mus^2 ), MSE.medians= mean( meds^2 ),
   MSE.monotoneM = mean( monm^2 ), MSE.redescM = mean( redm^2 ) )
 ```
 
-
-
-
-# Linear regression 
 
 
 
