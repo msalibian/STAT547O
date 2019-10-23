@@ -16,7 +16,7 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
     - [Lecture 1 code](Lecture1.md)
     - Introduction, motivation, goals, general setting
     - Location / scale (**brief**); M estimators, the problem of scale
-    - [Lecture 2 code]()
+    - [Lecture 2 code](Lecture2.md)
          - Contamination setting; breakdown point; estimators as functionals, "bias", IF;
         - Linear regression (**brief**)
         - Fixed designs;  Random designs;  Regularized linear models
