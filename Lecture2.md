@@ -34,15 +34,55 @@ motivated in a similar way as those for the location / scale model
 function). Such a monotone score function (corresponding to a convex
 loss function, but one that grows at a slower rate than the squared
 loss) was first proposed by Huber (1964, 1967, 1981). The corresponding
-regression estimators have bounded influence function, but may have a
+regression estimators have bounded influence functions, but may have a
 very low breakdown point (as low as \[1/p\], where \[p\] is the number
-of features) if high-leverale outliers are present. A solution is to use
-a bounded loss function, which results in a re-descending score
-function—a score function \[\psi(t)\] that is zero for \[|t| > c\] for
-some \[c > 0\]. Note that bounded loss functions are necessarily
-non-convex, and that the optimization problem that defines these
-estimators may have several critical points that do not correspond to
-the minimum. Computating these estimators can be challenging.
+of features) if high-leverage outliers (outliers among the explanatory
+variables) can be present.
+
+#### Fixed designs
+
+When the explanatory variables are “fixed” (in the sense of being
+“controlled”, as in a designed experiment, or because they are
+bounded, for example) then M-estimators with a monotone and bounded
+score function have high-breakdown point, and can be chosen to also be
+highly-efficient. For example, in this situation quantile regression
+(L1) estimators are robust (but not efficient). An effective strategy to
+obtain high-breakdown point and high-efficiency estimators in this case
+is as follows:
+
+  - Compute the L1 regression estimator;
+  - Compute an M-estimator of the scale of the corresponding residuals;
+  - Use this auxiliary residual scale estimator to compute an
+    M-estimator of regression (e.g. using Huber’s loss function).
+
+Note that since monotone score functions correspond to convex loss
+functions, the third step in the algorithm above is computationally
+relatively simple.
+
+It is easy to see that estimators based on monotone score functions may
+have larger biases than those based on re-descending ones. So, a simple
+variation of the approach above that generally performs better is to use
+a bounded loss function for the last step above. Since this now implies
+optimizing a non-convex function, the computational complexity can be
+prohibitive. However, extensive numerical experiments showed that
+finding a “local minimum” starting from a “good” initial point yields an
+estimator with very good properties, and one that it is very simple to
+compute. The corresponding algorithm is:
+
+  - Compute the L1 regression estimator;
+  - Compute an M-estimator of the scale of the corresponding residuals;
+  - Use this auxiliary residual scale estimator and the L1 regression
+    estimator to start the iterations to compute an M-estimator with a
+    re-descending score function.
+
+#### Random features (explanatory variables)
+
+A solution is to use a bounded loss function, which results in a
+re-descending score function—a score function \[\psi(t)\] that is zero
+for \[|t| > c\] for some \[c > 0\]. Note that bounded loss functions are
+necessarily non-convex, and that the optimization problem that defines
+these estimators may have several critical points that do not correspond
+to the minimum. Computating these estimators can be challenging.
 
 ## The issue of scale
 
@@ -218,3 +258,73 @@ cbind(ls=coef(a.ls), lmrob=coef(a), lmrobdetMM=coef(a.det))
     ## Acid.Conc.   -0.1521225  -0.07326852  -0.07355833
 
 #### Choosing the score / loss function
+
+For this class of M-estimators we can choose the family of loss/score
+functions, and the corresponding tuning constant. For example, Tukey’s
+bisquare loss is \[\rho(t) = min(k^2/6, k^2/6*(1-(1-(t/k)^2)^3))\]. The
+next figures illustrate \[\rho\] and its derivative (the corresponding
+score function):
+
+``` r
+tt <- seq(-6, 6, length=200)
+tun.cnst <- bisquare(0.85)
+par(mfrow=c(2,1))
+plot(tt, rho(tt, family='bisquare', cc=tun.cnst), type='l', 
+     lwd=2, col='red', xlab='t', ylab=expression(rho(t)))
+abline(v=0, lty=2)
+plot(tt, rhoprime(tt, family='bisquare', cc=tun.cnst), type='l', 
+     lwd=2, col='red', xlab='t', ylab=expression(psi(t)))
+abline(v=0, lty=2); abline(h=0, lty=2)
+```
+
+![](Lecture2_files/figure-gfm/tukey-1.png)<!-- -->
+
+``` r
+par(mfrow=c(1,1))
+```
+
+The tuning constant is typically chosen to obtain an estimator with a
+desired efficiency when the errors follow a specific distribution. For
+example, the function `bisquare()` used above returns the value of the
+tuning parameter that should be used with Tukey’s family of loss
+functions to obtain a desired efficiency when errors are Gaussian.
+Although the breakdown point of these estimators is high (as high as
+that of the auxiliary S-estimator for the residual scale, which can be
+chosen to be 50%), and their efficiency can then subsequently be set by
+selecting an appropriate tuning parameter, there is a bias / variance
+trade-off (the higher the efficiency (the lower the variance), the
+higher the asymptotic bias). The other parameter that can be used to
+reduce the bias of the estimator (for a given breakdown point and
+efficiency), is the family of loss functions. The package `RobStatTM`
+implements the optimal loss function (`opt`), which can be set using the
+control argument in `lmrobdetMM`. Below we revisit the stack loss
+example, using a 95% efficient estimator computed with the bias-optimal
+loss:
+
+``` r
+library(RobStatTM)
+set.seed(123)
+myc <- lmrobdet.control(family='opt', efficiency=.95)
+a.opt <- lmrobdetMM(stack.loss ~ ., data=stackloss, control=myc)
+par(mfrow=c(2,2))
+plot(a.opt, which=c(1, 2, 4), id.n=4)
+par(mfrow=c(1,1))
+```
+
+![](Lecture2_files/figure-gfm/stackloss.opt-1.png)<!-- -->
+
+Note that by using a loss function with better asymptotic bias
+properties we are able to detect all four outliers detected by the
+S-estimator but using a highly efficient and robust regression
+estimator, which results in better (e.g. more powerful) inference for
+the regression parameters. The estimated regression parameters are
+
+``` r
+cbind(ls=coef(a.ls), Tukey=coef(a.det), Opt=coef(a.opt))
+```
+
+    ##                      ls        Tukey          Opt
+    ## (Intercept) -39.9196744 -37.58384225 -37.69568828
+    ## Air.Flow      0.7156402   0.81860785   0.79745575
+    ## Water.Temp    1.2952861   0.54461166   0.58160820
+    ## Acid.Conc.   -0.1521225  -0.07355833  -0.06751118
