@@ -15,7 +15,7 @@ In this section we discuss briefly a class of robust estimators for linear regre
 M-estimators
 ------------
 
-M-estimators for linear regression are the natural extension of M-estimators for location/scale models to the regression case. Their intuitive motivation is similar to that used for the location / scale model—start with a Gaussian MLE estimator and truncate the loss / score function. Such a monotone score function (corresponding to a convex loss function, but one that grows at a slower rate than the squared loss) was first proposed by Huber (1964, 1967, 1973). The corresponding regression estimators have bounded influence functions, but may have a very low breakdown point (as low as
+M-estimators for linear regression are the natural extension of M-estimators for location/scale models to the regression case. Their intuitive motivation is similar to that used for the location / scale model—start with a Gaussian MLE estimator and truncate the loss / score function. Such a monotone score function (corresponding to a convex loss function, but one that grows at a slower rate than the squared loss) was first proposed by Huber ([1964](https://doi.org/10.1214/aoms/1177703732), [1967](https://projecteuclid.org/%20euclid.bsmsp/1200512988), and [1973](https://doi.org/10.1214/aos/1176342503). The corresponding regression estimators have bounded influence functions, but may have a very low breakdown point (as low as
 1/*p*
 , where
 *p*
@@ -25,17 +25,17 @@ M-estimators for linear regression are the natural extension of M-estimators for
 
 When the explanatory variables are "fixed" (in the sense of being "controlled", as in a designed experiment, or because they are bounded, for example) then M-estimators with a monotone and bounded score function have high-breakdown point, and can be chosen to also be highly-efficient. For example, in this situation quantile regression (L1) estimators are robust (but not efficient). An effective strategy to obtain high-breakdown point and high-efficiency estimators in this case is as follows:
 
--   Compute the L1 regression estimator;
--   Compute an M-estimator of the scale of the corresponding residuals;
--   Use this auxiliary residual scale estimator to compute an M-estimator of regression (e.g. using Huber's loss function).
+1.  Compute the L1 regression estimator;
+2.  Compute `s_n` an M-estimator of the scale of the corresponding residuals;
+3.  Use `s_n` to compute an M-estimator of regression (e.g. using Huber's loss function).
 
 Note that since monotone score functions correspond to convex loss functions, the third step in the algorithm above is computationally relatively simple.
 
 It is easy to see that estimators based on monotone score functions may have larger biases than those based on re-descending ones. So, a simple variation of the approach above that generally performs better is to use a bounded loss function for the last step above. Since this now implies optimizing a non-convex function, the computational complexity can be prohibitive. However, extensive numerical experiments showed that finding a "local minimum" starting from a "good" initial point yields an estimator with very good properties, and one that it is very simple to compute. The corresponding algorithm is:
 
--   Compute the L1 regression estimator;
--   Compute an M-estimator of the scale of the corresponding residuals;
--   Use this auxiliary residual scale estimator and the L1 regression estimator to start the iterations to compute an M-estimator with a re-descending score function.
+1.  Compute the L1 regression estimator;
+2.  Compute `s_n` an M-estimator of the scale of the corresponding residuals;
+3.  Use `s_n` and the L1 regression estimator to start the minimizing iterations of an M-estimator with a re-descending score function.
 
 #### Random features (explanatory variables)
 

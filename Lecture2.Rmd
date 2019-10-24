@@ -62,10 +62,9 @@ quantile regression
 effective strategy to obtain high-breakdown point and
 high-efficiency estimators in this case is as follows:
 
-- Compute the L1 regression estimator;
-- Compute an M-estimator of the scale of the corresponding residuals;
-- Use this auxiliary residual scale estimator to compute 
-an M-estimator of regression (e.g. using Huber's loss function). 
+1. Compute the L1 regression estimator;
+2. Compute `s_n` an M-estimator of the scale of the corresponding residuals;
+3. Use `s_n` to compute an M-estimator of regression (e.g. using Huber's loss function). 
 
 Note that since monotone score functions correspond to 
 convex loss functions, the third step in the algorithm above
@@ -83,12 +82,10 @@ initial point yields an estimator with very good properties,
 and one that it is very simple to compute. The 
 corresponding algorithm is:
 
-- Compute the L1 regression estimator;
-- Compute an M-estimator of the scale of the corresponding residuals;
-- Use this auxiliary residual scale estimator and the
-L1 regression estimator to start the iterations 
-to compute an M-estimator with a re-descending score function. 
-
+1. Compute the L1 regression estimator;
+2. Compute `s_n` an M-estimator of the scale of the corresponding residuals;
+3. Use `s_n` and the L1 regression estimator to start the minimizing iterations 
+of an M-estimator with a re-descending score function. 
 
 #### Random features (explanatory variables)
 
@@ -105,7 +102,6 @@ example in the [Lecture 1](Lecture1.md) notes).
 Some references include
 [Maronna et al, 1979](https://doi.org/10.1007/BFb0098492) and 
 [Maronna & Yohai, 1991](https://doi.org/10.2307/2290400).
-
 
 A solution to this problem is to use a bounded loss function
 $$\rho$$ instead. This results in a re-descending score function&mdash;a 
