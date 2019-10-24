@@ -33,13 +33,16 @@ will be mentioned below.
 ## M-estimators
 
 M-estimators for linear regression are the natural extension 
-of M-estimators for location/scale models. They can be 
-intuitively motivated in a similar way as those for the 
-location / scale model (start with a Gaussian MLE estimator
-and truncate the loss / score function). Such a monotone score function
+of M-estimators for location/scale models
+to the regression case. Their intuitive motivation is
+similar to that used for the location / scale model&mdash;start 
+with a Gaussian MLE estimator
+and truncate the loss / score function. Such a monotone score function
 (corresponding to a convex loss function, but one that grows 
 at a slower rate than the squared loss) was first proposed by 
-Huber (1964, 1967, 1981). The corresponding regression 
+Huber ([1964](https://doi.org/10.1214/aoms/1177703732), 
+[1967](https://projecteuclid.org/ euclid.bsmsp/1200512988), 
+and [1973](https://doi.org/10.1214/aos/1176342503). The corresponding regression 
 estimators have bounded influence functions, but may have 
 a very low breakdown point (as low as $$1/p$$, where $$p$$
 is the number of features) if high-leverage outliers 
@@ -89,14 +92,32 @@ to compute an M-estimator with a re-descending score function.
 
 #### Random features (explanatory variables)
 
-A solution is to use a bounded loss function, 
-which results in a re-descending score function&mdash;a 
+When explanatory variables are observed (are part of the
+random phenomenon being measured), outliers and other
+atypical data points can be present. Observations that 
+are outlying in the space of features are 
+usually called high-leverage. When such points are 
+present M-estimators for linear regression computed with a monotone 
+score function (e.g. Huber's, or L1 [quantile regression]) 
+may have a breakdown point as low as $$1/p$$, where $$p$$
+is the number of features (for an illustration, see the first 
+example in the [Lecture 1](Lecture1.md) notes). 
+Some references include
+[Maronna et al, 1979](https://doi.org/10.1007/BFb0098492) and 
+[Maronna & Yohai, 1991](https://doi.org/10.2307/2290400).
+
+
+A solution to this problem is to use a bounded loss function
+$$\rho$$ instead. This results in a re-descending score function&mdash;a 
 score function $$\psi(t)$$ that is zero for 
-$$|t| > c$$ for some $$c > 0$$. 
-Note that bounded loss functions are necessarily non-convex,
+$$|t| > c$$ for some $$c > 0$$. In addition, 
+note that bounded loss functions are necessarily non-convex,
 and that the optimization problem that defines these estimators 
 may have several critical points that do not correspond to the 
-minimum. Computating these estimators can be challenging. 
+global minimum. In general, computing these estimators can be challenging, 
+but [Yohai, 1987](https://doi.org/10.1214/aos/1176350366) showed that it is enough to find a local minimum 
+starting from a consistent estimator. This is discussed below
+in Sections "S-estimators" and "M-estimators with a preliminary scale".  
 
 ## The issue of scale
 
@@ -134,7 +155,7 @@ high-efficiency.
 #### Computational challenges
 
 S-estimators can be difficult to compute. They are defined as
-the point at which a typically non-convex function attains its
+the point at which a (typically) non-convex function attains its
 minimum. The loss function that needs to be minimized is only
 defined implicitly (as the solution to a non-linear equation). 
 However, its gradient can be computed explicitly, and iterative
@@ -162,7 +183,6 @@ coef(Sest)
 We can look at the fitted vs. residuals plot, and easily
 identify 4 potential outliers. 
 ```{r stackloss2, fig.width=6, fig.height=6}
-Sest$scale # same as a$scale
 plot(fitted(Sest), resid(Sest), pch=19, cex=1.1, 
      xlab='Fitted values', ylab='Residuals')
 abline(h=Sest$scale*2.5*c(-1, 0, 1), lty=2)
@@ -259,8 +279,7 @@ plot(tt, rho(tt, family='bisquare', cc=tun.cnst), type='l',
 abline(v=0, lty=2)
 plot(tt, rhoprime(tt, family='bisquare', cc=tun.cnst), type='l', 
      lwd=2, col='red', xlab='t', ylab=expression(psi(t)))
-abline(v=0, lty=2); abline(h=0, lty=2)
-par(mfrow=c(1,1))
+abline(v=0, lty=2); abline(h=0, lty=2); par(mfrow=c(1,1))
 ```
 
 The tuning constant is typically chosen to obtain an estimator
@@ -281,9 +300,12 @@ to reduce the bias of the estimator
 (for a given breakdown point and efficiency)&mdash;the **family 
 of loss functions** itself. The package `RobStatTM` implements the optimal
 loss function (`opt`), which can be set using the control 
-argument in `lmrobdetMM`. 
+argument in `lmrobdetMM` (see
+Section 5.8.1 in [Maronna et al, 2019](https://doi.org/10.1002/9781119214656)).
 Below we revisit the stack loss example, using a 95% efficient
-estimator computed with the bias-optimal loss:
+estimator computed with the bias-optimal loss, and
+compare it with the 85% efficient one based on the bisquare
+loss function. 
 ```{r stackloss.opt, fig.width=7.5, fig.height=7.5}
 library(RobStatTM)
 set.seed(123)
@@ -299,6 +321,10 @@ properties we are able to detect all four outliers detected by
 the S-estimator but using a highly efficient and robust 
 regression estimator, which results in better 
 (e.g. more powerful) inference for the regression parameters. 
+In other words, we obtain a more efficient regression estimator
+incurring in a much smaller increase in asymptotic bias, which
+results in better outlier-detection capabilities.
+
 The estimated regression parameters are
 ```{r comp.param}
 cbind(ls=coef(a.ls), Tukey=coef(a.det), Opt=coef(a.opt))
