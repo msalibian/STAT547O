@@ -1,7 +1,7 @@
 STAT547O - Lecture 2 notes
 ================
 Matias Salibian-Barrera
-2019-10-23
+2019-10-24
 
 #### LICENSE
 
@@ -261,9 +261,9 @@ cbind(ls=coef(a.ls), lmrob=coef(a), lmrobdetMM=coef(a.det))
 
 For this class of M-estimators we can choose the family of loss/score
 functions, and the corresponding tuning constant. For example, Tukey’s
-bisquare loss is \[\rho(t) = min(k^2/6, k^2/6*(1-(1-(t/k)^2)^3))\]. The
-next figures illustrate \[\rho\] and its derivative (the corresponding
-score function):
+bisquare loss is \[\rho(t) = \min(k^2/6, k^2/6*(1-(1-(t/k)^2)^3))\]. The
+next figures illustrate \[\rho\] and its derivative \[\psi\] (the
+corresponding score function):
 
 ``` r
 tt <- seq(-6, 6, length=200)
@@ -293,13 +293,14 @@ that of the auxiliary S-estimator for the residual scale, which can be
 chosen to be 50%), and their efficiency can then subsequently be set by
 selecting an appropriate tuning parameter, there is a bias / variance
 trade-off (the higher the efficiency (the lower the variance), the
-higher the asymptotic bias). The other parameter that can be used to
-reduce the bias of the estimator (for a given breakdown point and
-efficiency), is the family of loss functions. The package `RobStatTM`
-implements the optimal loss function (`opt`), which can be set using the
-control argument in `lmrobdetMM`. Below we revisit the stack loss
-example, using a 95% efficient estimator computed with the bias-optimal
-loss:
+higher the asymptotic bias).
+
+There is, however, another “parameter” that can be chosen to reduce the
+bias of the estimator (for a given breakdown point and efficiency)—the
+**family of loss functions** itself. The package `RobStatTM` implements
+the optimal loss function (`opt`), which can be set using the control
+argument in `lmrobdetMM`. Below we revisit the stack loss example, using
+a 95% efficient estimator computed with the bias-optimal loss:
 
 ``` r
 library(RobStatTM)
