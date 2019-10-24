@@ -101,7 +101,7 @@ text(fitted(Sest)[show.r]-1.5, resid(Sest)[show.r],
 M-estimators with a preliminary scale
 -------------------------------------
 
-The function `lmrob` in package `robusbase` implements M-estimators with a re-descending score (bounded loss) function, computed using a preliminary residual scale estimator (an S-estimator as above). This implementation uses data-dependent random starts for the S-estimator.
+The function `lmrob` in package `robustbase` implements M-estimators with a re-descending score (bounded loss) function, computed using a preliminary residual scale estimator (an S-estimator as above). This implementation uses data-dependent random starts for the S-estimator.
 
 ``` r
 set.seed(123)
