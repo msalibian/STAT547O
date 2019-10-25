@@ -13,25 +13,26 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
 ## Tentative schedule
 
 - Week 1: Oct 22 / 24
-    - [Lecture 1 code](Lecture1.md)
-    - Introduction, motivation, goals, general setting
-    - Location / scale (**brief**); M estimators, the problem of scale
-    - [Lecture 2 code](Lecture2.md)
-         - Contamination setting; breakdown point; estimators as functionals, "bias", IF;
-        - Linear regression (**brief**)
-        - Fixed designs;  Random designs;  Regularized linear models
+    - Introduction, motivation, goals, general setting (atypical observations).
+    - Location / scale (**brief**); M estimators; The problem of scale.
+        - [Lecture 1 code](Lecture1.md)
+    - Contamination setting; Breakdown Point; "Bias", Influence Function.
+    - Linear regression; M-estimators; The problem of scale.
+    - Fixed designs;  Random covariates.  
+    - M-estimators of scale; S-estimators of regression.
+        - [Lecture 2 code](Lecture2.md)
 - Week 2: Oct 29 / 31
-    - Linear regression (**brief**)
-        - Cont'd
-- Week 3: Nov 5 / 7
+    - M-estimators of scale; S-estimators of regression; MM-estimators.
+    - Algorithms for S- and MM-estimators.
+    - Regularized linear models.
     - Non-parametric regression;  Kernel; Splines; Additive Models
+- Week 3: Nov 5 / 7
     - GLM, GAM, GPLAM
-    - Boosting?
 - Week 4: Nov 12 / 14
-    - Inference: asymptotics; bootstrap; prediction (AIC?)
-- Week 5: Nov 19 / 21
     - Multivariate analysis
-         - estimation; outlier detection; PCA, Factor Analysis, plug-in vs. specific methods; depth
+         - Estimation; Outlier detection; Depth; PCA. 
+- Week 5: Nov 19 / 21
+    - Inference: asymptotics; bootstrap; prediction (AIC?)
 - Week 6: Nov 26 / 28
     - Functional Data Analysis
          - FPCA; Outlier detection / Depth;
