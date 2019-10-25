@@ -27,31 +27,50 @@ mentioned below.
 
 ## M-estimators
 
-M-estimators for linear regression are the natural extension of
-M-estimators for location/scale models to the regression case. Their
-intuitive motivation is similar to that used for the location / scale
+M-estimators for linear regression are a natural extension of the
+M-estimators used in the location/scale models. They can be motivated
+intuitively in a similar manner to that used for the location / scale
 model—start with a Gaussian MLE estimator and truncate the loss / score
 function. Such a monotone score function (corresponding to a convex loss
 function, but one that grows at a slower rate than the squared loss) was
-first proposed by Huber
-([1964](https://doi.org/10.1214/aoms/1177703732),
-[1967](https://projecteuclid.org/%20euclid.bsmsp/1200512988), and
-[1973](https://doi.org/10.1214/aos/1176342503)). The corresponding
-regression estimators have bounded influence functions, but may have a
-very low breakdown point (as low as \[1/p\], where \[p\] is the number
-of features) if high-leverage outliers (outliers among the explanatory
-variables) can be present.
+first proposed by Huber (in the location model:
+[1964](https://doi.org/10.1214/aoms/1177703732), in a more general
+univariate setting
+[1967](https://projecteuclid.org/%20euclid.bsmsp/1200512988), and for
+linear regression [1973](https://doi.org/10.1214/aos/1176342503)). Note
+that the family of M-estimators based on monotone (non-decreasing) score
+functions includes the L1 (quantile regression) estimators.
+
+<!-- The corresponding regression  -->
+
+<!-- estimators may have  -->
+
+<!-- a very low breakdown point (as low as $$1/p$$, where $$p$$ -->
+
+<!-- is the number of features) if high-leverage outliers  -->
+
+<!-- (outliers among the explanatory variables) can be  -->
+
+<!-- present (see, e.g. [Maronna et al, 1979](https://doi.org/10.1007/BFb0098492)).  -->
 
 #### Fixed designs
 
 When the explanatory variables are “fixed” (in the sense of being
 “controlled”, as in a designed experiment, or because they are
 bounded, for example) then M-estimators with a monotone and bounded
-score function have high-breakdown point, and can be chosen to also be
-highly-efficient. For example, in this situation quantile regression
-(L1) estimators are robust (but not efficient). An effective strategy to
-obtain high-breakdown point and high-efficiency estimators in this case
-is as follows:
+score function have high-breakdown point. For example, in this situation
+quantile regression (L1) estimators are robust (but not efficient).
+M-estimators computed with a Huber score function will also have
+high-breakdown point and the score function can be tuned to result in
+estimators that are also efficient. However, to compute these
+M-estimators estimators we need to use standardized residuals using an
+auxiliary (preliminary) residual scale estimator. Similar to what we did
+in the location model (where we used a robust scale estimator of the
+residuals computed from the median), here we can use a robust scale
+estimator of the residuals with respect to the L1 regression estimator,
+which does not require standardized residuals to be computed. Hence, an
+effective strategy to obtain high-breakdown point and high-efficiency
+estimators in this case is as follows:
 
 1.  Compute the L1 regression estimator;
 2.  Compute `s_n`, an M-estimator of the scale of the corresponding
@@ -64,14 +83,15 @@ functions, the third step in the algorithm above is computationally
 relatively simple.
 
 It is easy to see that estimators based on monotone score functions may
-have larger biases than those based on re-descending ones. So, a simple
-variation of the approach above that generally performs better is to use
-a bounded loss function for the last step above. Since this now implies
-optimizing a non-convex function, the computational complexity can be
-prohibitive. However, extensive numerical experiments showed that
-finding a “local minimum” starting from a “good” initial point yields an
-estimator with very good properties, and one that it is very simple to
-compute. The corresponding algorithm is:
+have larger biases than those based on re-descending ones (re-descending
+score functions are described below). So, a simple variation of the
+approach above that generally performs better is to use a bounded loss
+function for the last step above. Since this now implies optimizing a
+non-convex function, the computational complexity can be prohibitive.
+However, extensive numerical experiments showed that finding a “local
+minimum” starting from a “good” initial point yields an estimator with
+very good properties, and one that it is very simple to compute. The
+corresponding algorithm is:
 
 1.  Compute the L1 regression estimator;
 2.  Compute `s_n`, an M-estimator of the scale of the corresponding
@@ -109,17 +129,17 @@ notes). Some references include [Maronna et al
 (1979)](https://doi.org/10.1007/BFb0098492) and [Maronna & Yohai
 (1991)](https://doi.org/10.2307/2290400).
 
-A solution to this problem is to use a bounded loss function \[\rho\]
-instead. This results in a re-descending score function—a score function
-\[\psi(t)\] that is zero for \[|t| > c\] for some \[c > 0\]. In
-addition, note that bounded loss functions are necessarily non-convex,
-and that the optimization problem that defines these estimators may have
-several critical points that do not correspond to the global minimum. In
-general, computing these estimators can be challenging, but [Yohai
-(1987)](https://doi.org/10.1214/aos/1176350366) showed that it is enough
-to find a local minimum starting from a consistent estimator. This is
-discussed below in Sections “S-estimators” and “M-estimators with a
-preliminary scale”.
+A solution to this problem is to use a re-descending score function—a
+score function \[\psi(t)\] that is zero for \[|t| > c\] for some
+\[c > 0\]. This corresponds to a bounded loss function \[\rho\]. Since
+bounded loss functions are necessarily non-convex, the optimization
+problem that defines these estimators is computationally challenging. In
+particular, there may be several critical points (first-order conditions
+equal to zero) that do not correspond to the global minimum. However,
+[Yohai (1987)](https://doi.org/10.1214/aos/1176350366) showed that it is
+enough to find a local minimum starting from a consistent estimator.
+This is discussed below in Sections “S-estimators” and “M-estimators
+with a preliminary scale”.
 
 ## The issue of scale
 
@@ -130,13 +150,14 @@ in the estimating equations). Naturally, this issue also afects
 M-estimators for location / scale, but for them it can be solved
 relatively easily by using the MAD of the observations, for example.
 Note that this robust residual scale estimator can be computed
-independently from the M-estimator. In regression models, however, there
-is no simple robust regression estimator that could be used to obtain
-reliable residuals, in order to compute a preliminary residual scale
-estimator. In other words, to compute a robust regression estimator we
-need a robust residual scale estimator. But to compute a robust residual
-scale estimator we need a robust regression estimator (in order to
-obtain reliable residuals). S-estimators (below) can break this impasse.
+independently from the M-estimator. In regression models, however, where
+outliers may be present in the explanatory variables, there is no simple
+robust regression estimator that can be used to obtain reliable
+residuals, in order to compute a preliminary residual scale estimator.
+In other words, to compute a robust regression estimator we need a
+robust residual scale estimator. But to compute a robust residual scale
+estimator we need a robust regression estimator (in order to obtain
+reliable residuals). S-estimators (below) can break this impasse.
 
 ## S-estimators
 
