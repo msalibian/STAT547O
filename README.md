@@ -15,12 +15,12 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
 - Week 1: Oct 22 / 24
     - Introduction, motivation, goals, general setting (atypical observations).
     - Location / scale (**brief**); M estimators; The problem of scale.
-        - [Lecture 1 code](Lecture1.md)
+        - [Lecture 1 non-technical notes](Lecture1.md)
     - Contamination setting; Breakdown Point; "Bias", Influence Function.
     - Linear regression; M-estimators; The problem of scale.
     - Fixed designs;  Random covariates.  
     - M-estimators of scale; S-estimators of regression.
-        - [Lecture 2 code](Lecture2.md)
+        - [Lecture 2 non-technical notes](Lecture2.md)
 - Week 2: Oct 29 / 31
     - M-estimators of scale; S-estimators of regression; MM-estimators.
     - Algorithms for S- and MM-estimators.
