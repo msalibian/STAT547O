@@ -23,14 +23,13 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
         - [Lecture 2 non-technical notes](Lecture2.md)
 - Week 2: Oct 29 / 31
     - M-estimators of scale; S-estimators of regression; MM-estimators.
-    - Algorithms for S- and MM-estimators.
-    - Regularized linear models.
-    - Non-parametric regression;  Kernel; Splines; Additive Models
+    - (Algorithms for S- and MM-estimators; Regularized linear models. )
+    - Non-parametric regression;  Kernel smoothers; Splines; Additive Models
 - Week 3: Nov 5 / 7
     - GLM, GAM, GPLAM
 - Week 4: Nov 12 / 14
     - Multivariate analysis
-         - Estimation; Outlier detection; Depth; PCA. 
+         - Estimation; Outlier detection; Depth; PCA.
 - Week 5: Nov 19 / 21
     - Inference: asymptotics; bootstrap; prediction (AIC?)
 - Week 6: Nov 26 / 28
