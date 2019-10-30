@@ -1,14 +1,18 @@
 STAT547O - Lecture 3 notes
 ================
 Matias Salibian-Barrera
-2019-10-25
+2019-10-30
 
 #### LICENSE
 
-These notes are released under the "Creative Commons Attribution-ShareAlike 4.0 International" license. See the **human-readable version** [here](https://creativecommons.org/licenses/by-sa/4.0/) and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
+These notes are released under the “Creative Commons
+Attribution-ShareAlike 4.0 International” license. See the
+**human-readable version**
+[here](https://creativecommons.org/licenses/by-sa/4.0/) and the **real
+thing**
+[here](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
 
-Non-parametric regression
-=========================
+# Non-parametric regression
 
 ``` r
 data(mcycle, package='MASS')
@@ -24,11 +28,47 @@ b <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5,
 lines(tt, b$prediction+b$alpha, col='blue3', lwd=3)
 ```
 
-![](Lecture3_files/figure-markdown_github/cycle-1.png)
+![](Lecture3_files/figure-gfm/cycle-1.png)<!-- -->
+
+To select an optimal bandwidth, we use 5-fold CV
+
+``` r
+hs <- sd(mcycle$times)*c(1, 1.2, 1.5, 2, 3, 5, 7)
+ls <- length(hs)
+M <- 50
+rmspe <- array(dim=c(M, ls))
+for(i in 1:M) {
+  for(j in 1:ls) {
+    rmspe[i, j] <- backf.rob.cv(k = 5, Xp = mcycle$times, 
+              yp=mcycle$accel, windows=hs[j], seed=123+17*i, degree=0, type="Tukey") 
+  }
+}
+boxplot(rmspe, col='gray70')
+```
+
+![](Lecture3_files/figure-gfm/cycle.cv.deg0-1.png)<!-- -->
+
+Optimal fit
+
+``` r
+( op.h <- hs[which.min(colMeans(rmspe))] )
+```
+
+    ## [1] 26.26413
+
+``` r
+a.op <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=op.h, 
+               point=as.matrix(tt), type='Tukey') 
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+lines(tt, a.op$prediction+a.op$alpha, col='tomato3', lwd=3)
+```
+
+![](Lecture3_files/figure-gfm/op.cycle.deg0-1.png)<!-- -->
 
 ### Another example
 
-Here is a (longish) example on how `RBF` works. We use the Air Quality data.
+Here is a (longish) example on how `RBF` works. We use the Air Quality
+data.
 
 ``` r
 library(RBF)
@@ -46,22 +86,27 @@ A scatter plot of the data
 pairs(cbind(y,x), labels=c('Ozone', colnames(x)), pch=19, col='gray30', cex=1.5)
 ```
 
-![](Lecture3_files/figure-markdown_github/scatter-1.png)
+![](Lecture3_files/figure-gfm/scatter-1.png)<!-- -->
 
-The following bandwidths were obtained via a robust leave-one-out cross-validation procedure (described in the paper). Here we just set them to their optimal values:
+The following bandwidths were obtained via a robust leave-one-out
+cross-validation procedure (described in the paper). Here we just set
+them to their optimal values:
 
 ``` r
 bandw <- c(136.728453,   8.894283,   4.764985)
 ```
 
-Now we use the robust backfitting algorithm to fit an additive model using Tukey's bisquare loss (the default tuning constant for this loss function is 4.685)
+Now we use the robust backfitting algorithm to fit an additive model
+using Tukey’s bisquare loss (the default tuning constant for this loss
+function is 4.685)
 
 ``` r
 fit.full <- backf.rob(Xp=x, yp=y, windows=bandw, epsilon=1e-6, 
                      degree=1, type='Tukey')
 ```
 
-We display the 3 fits (one per additive component), being careful with the axis limits
+We display the 3 fits (one per additive component), being careful with
+the axis limits
 
 ``` r
 lim.cl <- lim.rob <- matrix(0, 2, 3)
@@ -75,9 +120,10 @@ for(j in 1:3) {
 }
 ```
 
-![](Lecture3_files/figure-markdown_github/showfits-1.png)
+![](Lecture3_files/figure-gfm/showfits-1.png)<!-- -->
 
-We now compute and display the classical backfitting fits, with bandwidths chosen via leave-one-out CV
+We now compute and display the classical backfitting fits, with
+bandwidths chosen via leave-one-out CV
 
 ``` r
 bandw.cl <- c(91.15, 10.67, 9.53)
@@ -93,9 +139,10 @@ for(j in 1:3) {
 }
 ```
 
-![](Lecture3_files/figure-markdown_github/classicfits-1.png)
+![](Lecture3_files/figure-gfm/classicfits-1.png)<!-- -->
 
-The following plots are partial residual plots with both the classical and robust fits on them
+The following plots are partial residual plots with both the classical
+and robust fits on them
 
 ``` r
 lims <- lim.cl
@@ -114,9 +161,10 @@ for(j in 1:3) {
 }
 ```
 
-![](Lecture3_files/figure-markdown_github/overlay-1.png)
+![](Lecture3_files/figure-gfm/overlay-1.png)<!-- -->
 
-We look at the residuals from the robust fit to identify potential outiers
+We look at the residuals from the robust fit to identify potential
+outiers
 
 ``` r
 re.ro <- y - fit.full$alpha - rowSums(fit.full$g.matrix)
@@ -127,7 +175,7 @@ boxplot(re.ro, col='gray80', pch=19, cex=1.5)
 points(rep(1, length(ou.ro)), re.ro[ou.ro], pch=19, cex=2, col='red')
 ```
 
-![](Lecture3_files/figure-markdown_github/outliers-1.png)
+![](Lecture3_files/figure-gfm/outliers-1.png)<!-- -->
 
 We highlight these suspicious observations on the scatter plot
 
@@ -139,7 +187,7 @@ os2 <- c(os[-ou.ro], os[ou.ro])
 pairs(cbind(y,x)[os2,], labels=c('Ozone', colnames(x)), pch=19, col=cs[os2], cex=1.5)
 ```
 
-![](Lecture3_files/figure-markdown_github/showouts-1.png)
+![](Lecture3_files/figure-gfm/showouts-1.png)<!-- -->
 
 and on the partial residuals plots
 
@@ -156,9 +204,10 @@ for(j in 1:3) {
 }
 ```
 
-![](Lecture3_files/figure-markdown_github/showouts2-1.png)
+![](Lecture3_files/figure-gfm/showouts2-1.png)<!-- -->
 
-If we use the classical backfitting algorithm on the data without the potential outliers, we obtain almost identical results
+If we use the classical backfitting algorithm on the data without the
+potential outliers, we obtain almost identical results
 
 ``` r
 # Run the classical backfitting algorithm without outliers
@@ -180,18 +229,30 @@ for(j in 1:3) {
 }
 ```
 
-![](Lecture3_files/figure-markdown_github/bothonclean-1.png)
+![](Lecture3_files/figure-gfm/bothonclean-1.png)<!-- -->
 
 <!-- Add outliers? -->
+
 <!-- ```{r cycle2, fig.width=6, fig.height=6}  -->
+
 <!-- x0 <- mcycle -->
+
 <!-- set.seed(123) -->
+
 <!-- x0 <- rbind(x0, cbind(times=rnorm(10, mean=20, sd=3),  -->
+
 <!--                         accel=rnorm(10, mean=50, sd=2))) -->
+
 <!-- tt <- with(x0, seq(min(times), max(times), length=200)) -->
+
 <!-- a <- backf.rob(Xp = x0$times, yp=x0$accel, windows=5, point=as.matrix(tt), type='Tukey')  -->
+
 <!-- plot(accel ~ times, data=x0, pch=19, col='gray50') -->
+
 <!-- lines(tt, a$prediction+a$alpha, col='tomato3', lwd=3) -->
+
 <!-- b <- backf.rob(Xp = x0$times, yp=x0$accel, windows=5, point=as.matrix(tt), degree=2, type='Tukey') -->
+
 <!-- lines(tt, b$prediction+b$alpha, col='blue3', lwd=3) -->
+
 <!-- ``` -->

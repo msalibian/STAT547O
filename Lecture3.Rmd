@@ -33,6 +33,32 @@ b <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5,
 lines(tt, b$prediction+b$alpha, col='blue3', lwd=3)
 ```
 
+To select an optimal bandwidth, we use 5-fold CV
+
+```{r cycle.cv.deg0}
+hs <- sd(mcycle$times)*c(1, 1.2, 1.5, 2, 3, 5, 7)
+ls <- length(hs)
+M <- 50
+rmspe <- array(dim=c(M, ls))
+for(i in 1:M) {
+  for(j in 1:ls) {
+    rmspe[i, j] <- backf.rob.cv(k = 5, Xp = mcycle$times, 
+              yp=mcycle$accel, windows=hs[j], seed=123+17*i, degree=0, type="Tukey") 
+  }
+}
+boxplot(rmspe, col='gray70')
+```
+
+Optimal fit
+```{r op.cycle.deg0, fig.width=6, fig.height=6} 
+( op.h <- hs[which.min(colMeans(rmspe))] )
+a.op <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=op.h, 
+               point=as.matrix(tt), type='Tukey') 
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+lines(tt, a.op$prediction+a.op$alpha, col='tomato3', lwd=3)
+```
+
+
 ### Another example
 
 Here is a (longish) example on how `RBF` works. 
