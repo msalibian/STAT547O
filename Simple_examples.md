@@ -214,12 +214,43 @@ result of using an efficient and robust estimator.
 
 <!-- # sum( rho(re/si.hat, family='bisquare', cc=cc) ) / 16 -->
 
+<!-- ```{r u} -->
+
+<!-- myc <- lmrobdet.control(family='bisquare', efficiency=0.85) -->
+
+<!-- ph.M <- lmrobM(plant ~ inorg, data=phosphor, control=myc) -->
+
+<!-- plot(plant ~ inorg, data=phosphor, pch=19, cex=1.2) -->
+
+<!-- abline(ph.M, lwd=2, col='tomato3') -->
+
+<!-- legend(5, 160, legend='lmrobM fit', lwd=2, col='tomato3') -->
+
+<!-- ``` -->
+
+### Non-parametric regression
+
+Consider the motorcycle acceleration data
+
 ``` r
-myc <- lmrobdet.control(family='bisquare', efficiency=0.85)
-ph.M <- lmrobM(plant ~ inorg, data=phosphor, control=myc)
-plot(plant ~ inorg, data=phosphor, pch=19, cex=1.2)
-abline(ph.M, lwd=2, col='tomato3')
-legend(5, 160, legend='lmrobM fit', lwd=2, col='tomato3')
+data(mcycle, package='MASS')
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
 ```
 
-![](Simple_examples_files/figure-gfm/u-1.png)<!-- -->
+![](Simple_examples_files/figure-gfm/cycledata-1.png)<!-- -->
+
+We will compute a Kernel M-estimator
+
+``` r
+library(RBF)
+tt <- with(mcycle, seq(min(times), max(times), length=200))
+a <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5, 
+               point=as.matrix(tt), type='Tukey') 
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+lines(tt, a$prediction+a$alpha, col='tomato3', lwd=3)
+b <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5, 
+               point=as.matrix(tt), degree=2, type='Tukey')
+lines(tt, b$prediction+b$alpha, col='blue3', lwd=3)
+```
+
+![](Simple_examples_files/figure-gfm/cycle2-1.png)<!-- -->

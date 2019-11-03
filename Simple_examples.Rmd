@@ -178,11 +178,54 @@ result of using an efficient and robust estimator.
 
 
 
-```{r u}
-myc <- lmrobdet.control(family='bisquare', efficiency=0.85)
-ph.M <- lmrobM(plant ~ inorg, data=phosphor, control=myc)
-plot(plant ~ inorg, data=phosphor, pch=19, cex=1.2)
-abline(ph.M, lwd=2, col='tomato3')
-legend(5, 160, legend='lmrobM fit', lwd=2, col='tomato3')
+<!-- ```{r u} -->
+<!-- myc <- lmrobdet.control(family='bisquare', efficiency=0.85) -->
+<!-- ph.M <- lmrobM(plant ~ inorg, data=phosphor, control=myc) -->
+<!-- plot(plant ~ inorg, data=phosphor, pch=19, cex=1.2) -->
+<!-- abline(ph.M, lwd=2, col='tomato3') -->
+<!-- legend(5, 160, legend='lmrobM fit', lwd=2, col='tomato3') -->
+<!-- ``` -->
+
+### Non-parametric regression
+
+Consider the motorcycle acceleration data
+```{r cycledata, fig.width=6, fig.height=6} 
+data(mcycle, package='MASS')
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
 ```
 
+We will compute a Kernel M-estimator at `x0 = 17`. 
+We first need an estimator of the residual scale. 
+Looking at the plot, it does not seem reasonable to 
+assume a homogeneous model, so we look for a 
+*local* residual scale estimator. We use a 
+bandwidth `h = 3`. The local MAD (using a 
+local median estimator) is
+```{r localmad}
+si.hat <- with(mcycle, mad( accel[ abs(times-17) < 3] ) )
+```
+Note that residuals with respect to a local L1 estimator
+would be much smaller
+```{r locall1}
+ii <- with(mcycle, which( abs(times-17) < 3) )
+si.hat2 <- mad( resid( quantreg::rq(accel ~ times, data=mcycle, subset=ii) ) )
+```
+
+```{r cycle2, fig.width=6, fig.height=6} 
+library(RBF)
+tt <- with(mcycle, seq(min(times), max(times), length=200))
+a <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5, 
+               point=as.matrix(tt), type='Tukey') 
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+lines(tt, a$prediction+a$alpha, col='tomato3', lwd=3)
+b <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5, 
+               point=as.matrix(tt), degree=2, type='Tukey')
+lines(tt, b$prediction+b$alpha, col='blue3', lwd=3)
+```
+
+```{r cyclemgcv}
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+a <- mgcv::gam(accel ~ s(times, bs='cr'), data=mcycle, family='gaussian')
+plot(a, resid=TRUE, pch=19, cex=.9)
+predict(a, newdata=data.frame(times=17))
+```
