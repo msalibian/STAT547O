@@ -1,0 +1,89 @@
+---
+title: "STAT547O - Lecture notes"
+author: "Matias Salibian-Barrera"
+date: "`r format(Sys.Date())`"
+output: github_document
+---
+  
+  ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=5, fig.height=5, 
+message=FALSE, warning=FALSE)
+```
+
+#### LICENSE
+These notes are released under the 
+"Creative Commons Attribution-ShareAlike 4.0 International" license. 
+See the **human-readable version** [here](https://creativecommons.org/licenses/by-sa/4.0/)
+and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode). 
+
+# Simple examples of linear and non-parametric regression
+
+
+```{r cycle, fig.width=6, fig.height=6} 
+library(RobStatTM)
+# we use bisquare
+# E(\rho(u)) = 1/2
+cc <- lmrobdet.control(family='bisquare', bb=.5)$tuning.chi
+integrate(function(a, family, cc=cc) rho(a, family=family, cc=cc)*dnorm(a), 
+          lower=-Inf, upper=+Inf, family='bisquare', cc=cc)$value
+```
+
+```{r a}
+data(phosphor, package='robustbase')
+library(RobStatTM)
+# to compute the S-estimator
+# initial
+phosphor[17, 'organic'] <- 15
+n <- nrow(phosphor)
+# x = organic, y = plant
+xx <- cbind(rep(1, n), phosphor$organic)
+y <- phosphor$plant
+cc <- lmrobdet.control(family='bisquare', bb=.5)$tuning.chi
+set.seed(123)
+(ii <- sample(n, 2))
+beta <- beta.ini <- coef(lm(plant ~ organic, data=phosphor, subset=ii))
+# start iterations
+sis <- vector('numeric', 100)
+for(j in 1:100) {
+re <- as.vector(y - xx %*% beta) # with(phosphor, plant - beta[1] - beta[2]*organic)
+sis[j] <- si.hat <- mscale(re, tuning.chi=cc, family='bisquare') 
+ww <- rhoprime(re/si.hat, family='bisquare', cc=cc) / (re/si.hat)
+beta <- solve( t(xx) %*% (xx*ww), t(xx * ww) %*% y) 
+}
+beta.S <- beta
+plot(plant ~ organic, data=phosphor, pch=19, col='gray50')
+abline(beta.S, lwd=3, col='tomato3')
+abline(lm(plant ~ organic, data=phosphor), lwd=3, col='hotpink')
+```
+
+
+```{r a2}
+# Now we use these as a starting point for a more efficient M-est
+cc2 <- lmrobdet.control(family='bisquare', bb=.5)$tuning.psi
+for(j in 1:100) {
+re <- as.vector(y - xx %*% beta) # with(phosphor, plant - beta[1] - beta[2]*organic)
+ww <- rhoprime(re/si.hat, family='bisquare', cc=cc2) / (re/si.hat)
+beta <- solve( t(xx) %*% (xx*ww), t(xx * ww) %*% y) 
+}
+beta.M <- beta
+plot(plant ~ organic, data=phosphor, pch=19, col='gray50')
+abline(beta.S, lwd=3, col='tomato3')
+abline(lm(plant ~ organic, data=phosphor), lwd=3, col='hotpink')
+abline(beta.M, lwd=3, col='skyblue')
+```
+
+# a2 <- robustbase::lmrob(plant ~ organic, data=phosphor)
+# beta2 <- a2$init.S$coef
+# re2 <- as.vector(y - xx%*%beta2)
+# sum( rho(re2/a2$init.S$scale, family='bisquare', cc=cc) ) / 16
+# sum( rho(re/si.hat, family='bisquare', cc=cc) ) / 16
+
+
+
+```{r u}
+ph.M <- lmrobM(plant ~ inorg, data=phosphor, control=myc)
+plot(plant ~ inorg, data=phosphor, pch=19, cex=1.2)
+abline(ph.M, lwd=2, col='tomato3')
+legend(5, 160, legend='lmrobM fit', lwd=2, col='tomato3')
+```
+
