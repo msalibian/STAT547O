@@ -169,6 +169,20 @@ Note that, unlike the S-estimator, the MM-estimator is indistinguishable from th
 LS estimator computed on the clean data. This is the desired
 result of using an efficient and robust estimator. 
 
+<!-- #### A bad start -->
+
+<!-- ```{r bad} -->
+<!-- beta <- coef(lm(plant ~ organic, data=phosphor)) -->
+<!-- for(j in 1:100) { -->
+<!--   re <- as.vector(y - xx %*% beta)  -->
+<!--   sis[j] <- si.hat <- mscale(re, tuning.chi=cc, family='bisquare')  -->
+<!--   ww <- rhoprime(re/si.hat, family='bisquare', cc=cc) / (re/si.hat) -->
+<!--   beta <- solve( t(xx) %*% (xx*ww), t(xx * ww) %*% y)  -->
+<!-- } -->
+<!-- plot(plant ~ organic, data=phosphor, pch=19, col='gray50') -->
+<!-- abline(beta, lwd=3, col='hotpink') -->
+<!-- abline(lm(plant ~ organic, data=phosphor), lwd=3, col='steelblue3') -->
+<!-- ``` -->
 
 <!-- # a2 <- robustbase::lmrob(plant ~ organic, data=phosphor) -->
 <!-- # beta2 <- a2$init.S$coef -->

@@ -204,6 +204,25 @@ Note that, unlike the S-estimator, the MM-estimator is indistinguishable
 from the LS estimator computed on the clean data. This is the desired
 result of using an efficient and robust estimator.
 
+#### A bad start
+
+``` r
+phosphor[17, 'organic'] <- 15
+beta <- coef(lm(plant ~ organic, data=phosphor))
+beta <- c(300, -2)
+for(j in 1:100) {
+  re <- as.vector(y - xx %*% beta) 
+  sis[j] <- si.hat <- mscale(re, tuning.chi=cc, family='bisquare') 
+  ww <- rhoprime(re/si.hat, family='bisquare', cc=cc) / (re/si.hat)
+  beta <- solve( t(xx) %*% (xx*ww), t(xx * ww) %*% y) 
+}
+plot(plant ~ organic, data=phosphor, pch=19, col='gray50')
+abline(beta, lwd=3, col='hotpink')
+abline(lm(plant ~ organic, data=phosphor), lwd=3, col='steelblue3')
+```
+
+![](Simple_examples_files/figure-gfm/bad-1.png)<!-- -->
+
 <!-- # a2 <- robustbase::lmrob(plant ~ organic, data=phosphor) -->
 
 <!-- # beta2 <- a2$init.S$coef -->
@@ -239,7 +258,23 @@ plot(accel ~ times, data=mcycle, pch=19, col='gray50')
 
 ![](Simple_examples_files/figure-gfm/cycledata-1.png)<!-- -->
 
-We will compute a Kernel M-estimator
+We will compute a Kernel M-estimator at `x0 = 17`. We first need an
+estimator of the residual scale. Looking at the plot, it does not seem
+reasonable to assume a homogeneous model, so we look for a *local*
+residual scale estimator. We use a bandwidth `h = 3`. The local MAD
+(using a local median estimator) is
+
+``` r
+si.hat <- with(mcycle, mad( accel[ abs(times-17) < 3] ) )
+```
+
+Note that residuals with respect to a local L1 estimator would be much
+smaller
+
+``` r
+ii <- with(mcycle, which( abs(times-17) < 3) )
+si.hat2 <- mad( resid( quantreg::rq(accel ~ times, data=mcycle, subset=ii) ) )
+```
 
 ``` r
 library(RBF)
@@ -254,3 +289,23 @@ lines(tt, b$prediction+b$alpha, col='blue3', lwd=3)
 ```
 
 ![](Simple_examples_files/figure-gfm/cycle2-1.png)<!-- -->
+
+``` r
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+```
+
+![](Simple_examples_files/figure-gfm/cyclemgcv-1.png)<!-- -->
+
+``` r
+a <- mgcv::gam(accel ~ s(times, bs='cr'), data=mcycle, family='gaussian')
+plot(a, resid=TRUE, pch=19, cex=.9)
+```
+
+![](Simple_examples_files/figure-gfm/cyclemgcv-2.png)<!-- -->
+
+``` r
+predict(a, newdata=data.frame(times=17))
+```
+
+    ##         1 
+    ## -66.53594
