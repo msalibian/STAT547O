@@ -204,24 +204,31 @@ Note that, unlike the S-estimator, the MM-estimator is indistinguishable
 from the LS estimator computed on the clean data. This is the desired
 result of using an efficient and robust estimator.
 
-#### A bad start
+<!-- #### A bad start -->
 
-``` r
-phosphor[17, 'organic'] <- 15
-beta <- coef(lm(plant ~ organic, data=phosphor))
-beta <- c(300, -2)
-for(j in 1:100) {
-  re <- as.vector(y - xx %*% beta) 
-  sis[j] <- si.hat <- mscale(re, tuning.chi=cc, family='bisquare') 
-  ww <- rhoprime(re/si.hat, family='bisquare', cc=cc) / (re/si.hat)
-  beta <- solve( t(xx) %*% (xx*ww), t(xx * ww) %*% y) 
-}
-plot(plant ~ organic, data=phosphor, pch=19, col='gray50')
-abline(beta, lwd=3, col='hotpink')
-abline(lm(plant ~ organic, data=phosphor), lwd=3, col='steelblue3')
-```
+<!-- ```{r bad} -->
 
-![](Simple_examples_files/figure-gfm/bad-1.png)<!-- -->
+<!-- beta <- coef(lm(plant ~ organic, data=phosphor)) -->
+
+<!-- for(j in 1:100) { -->
+
+<!--   re <- as.vector(y - xx %*% beta)  -->
+
+<!--   sis[j] <- si.hat <- mscale(re, tuning.chi=cc, family='bisquare')  -->
+
+<!--   ww <- rhoprime(re/si.hat, family='bisquare', cc=cc) / (re/si.hat) -->
+
+<!--   beta <- solve( t(xx) %*% (xx*ww), t(xx * ww) %*% y)  -->
+
+<!-- } -->
+
+<!-- plot(plant ~ organic, data=phosphor, pch=19, col='gray50') -->
+
+<!-- abline(beta, lwd=3, col='hotpink') -->
+
+<!-- abline(lm(plant ~ organic, data=phosphor), lwd=3, col='steelblue3') -->
+
+<!-- ``` -->
 
 <!-- # a2 <- robustbase::lmrob(plant ~ organic, data=phosphor) -->
 
@@ -261,51 +268,107 @@ plot(accel ~ times, data=mcycle, pch=19, col='gray50')
 We will compute a Kernel M-estimator at `x0 = 17`. We first need an
 estimator of the residual scale. Looking at the plot, it does not seem
 reasonable to assume a homogeneous model, so we look for a *local*
-residual scale estimator. We use a bandwidth `h = 3`. The local MAD
+residual scale estimator. We use a bandwidth `h = 2`. The local MAD
 (using a local median estimator) is
 
 ``` r
-si.hat <- with(mcycle, mad( accel[ abs(times-17) < 3] ) )
+x0 <- 17
+h <- 3
+si.hat <- with(mcycle, mad( accel[ abs(times-x0) < h] ) )
 ```
 
 Note that residuals with respect to a local L1 estimator would be much
 smaller
 
 ``` r
-ii <- with(mcycle, which( abs(times-17) < 3) )
+ii <- with(mcycle, which( abs(times-x0) < h) )
 si.hat2 <- mad( resid( quantreg::rq(accel ~ times, data=mcycle, subset=ii) ) )
 ```
+
+We now compute \[\hat{f}(x0)\]. We use the Epanechnikov kernel as
+implemented in `RBF::k.epan`, and the residual scale estimator `si.hat2`
+above. We compute a local linear fit, with a redescending \[\rho\], from
+Tukey’s bisquare family.
+
+``` r
+# initial
+beta <- coef( quantreg::rq(accel ~ I(times-x0), data=mcycle, subset=ii) )
+n <- nrow(mcycle)
+zz <- cbind(rep(1,n), mcycle$times - x0)
+ker.we <- RBF::k.epan((mcycle$times - x0)/h)
+y <- mcycle$accel
+cc2 <- lmrobdet.control(family='bisquare', bb=.5)$tuning.psi
+for(j in 1:100) {
+  re <- as.vector(y - zz %*% beta)
+  ww1 <- rhoprime(re/si.hat2, family='bisquare', cc=cc2) / (re/si.hat2)
+  ww1[ is.nan(ww1) ] <- 1
+  ww <- ker.we * ww1
+  beta <- solve( t(zz) %*% (zz*ww), t(zz * ww) %*% y) 
+}
+```
+
+Let’s see.
+
+``` r
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+points(accel ~ times, data=mcycle, pch=19, col='steelblue3', subset=ii)
+abline(v=17)
+points(17, beta[1], pch=19, col='magenta', cex=1.3)
+abline(beta[1] - 17*beta[2], beta[2], lwd=1, col='steelblue3')
+```
+
+![](Simple_examples_files/figure-gfm/mest-1.png)<!-- -->
+
+Repeat for \[x0 = 18\].
+
+``` r
+# save fit for 17
+beta17 <- beta
+x0 <- 18
+ii <- with(mcycle, which( abs(times-x0) < 3) )
+si.hat2 <- mad( resid( quantreg::rq(accel ~ times, data=mcycle, subset=ii) ) )
+beta <- coef( quantreg::rq(accel ~ I(times-x0), data=mcycle, subset=ii) )
+zz <- cbind(rep(1,n), mcycle$times - x0)
+ker.we <- RBF::k.epan((mcycle$times - x0)/h)
+for(j in 1:100) {
+  re <- as.vector(y - zz %*% beta)
+  ww1 <- rhoprime(re/si.hat2, family='bisquare', cc=cc2) / (re/si.hat2)
+  ww1[ is.nan(ww1) ] <- 1
+  ww <- ker.we * ww1
+  beta <- solve( t(zz) %*% (zz*ww), t(zz * ww) %*% y) 
+}
+beta18 <- beta
+plot(accel ~ times, data=mcycle, pch=19, col='gray50')
+abline(v=c(17, 18))
+points(17, beta17[1], pch=19, col='magenta', cex=1.3)
+points(18, beta18[1], pch=19, col='magenta', cex=1.3)
+```
+
+![](Simple_examples_files/figure-gfm/repeat-1.png)<!-- -->
+
+Compare with the fit from package `RBF`.
 
 ``` r
 library(RBF)
 tt <- with(mcycle, seq(min(times), max(times), length=200))
-a <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5, 
-               point=as.matrix(tt), type='Tukey') 
+a <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=h, 
+               point=as.matrix(tt), type='Tukey', degree=1) 
 plot(accel ~ times, data=mcycle, pch=19, col='gray50')
 lines(tt, a$prediction+a$alpha, col='tomato3', lwd=3)
-b <- backf.rob(Xp = mcycle$times, yp=mcycle$accel, windows=5, 
-               point=as.matrix(tt), degree=2, type='Tukey')
-lines(tt, b$prediction+b$alpha, col='blue3', lwd=3)
+points(17, beta17[1], pch=19, col='magenta', cex=1.3)
+points(18, beta18[1], pch=19, col='magenta', cex=1.3)
 ```
 
 ![](Simple_examples_files/figure-gfm/cycle2-1.png)<!-- -->
 
-``` r
-plot(accel ~ times, data=mcycle, pch=19, col='gray50')
-```
+<!-- ```{r cyclemgcv} -->
 
-![](Simple_examples_files/figure-gfm/cyclemgcv-1.png)<!-- -->
+<!-- plot(accel ~ times, data=mcycle, pch=19, col='gray50') -->
 
-``` r
-a <- mgcv::gam(accel ~ s(times, bs='cr'), data=mcycle, family='gaussian')
-plot(a, resid=TRUE, pch=19, cex=.9)
-```
+<!-- a <- mgcv::gam(accel ~ s(times, bs='cr'), data=mcycle, family='gaussian') -->
 
-![](Simple_examples_files/figure-gfm/cyclemgcv-2.png)<!-- -->
+<!-- plot(a, resid=TRUE, pch=19, cex=.9) -->
 
-``` r
-predict(a, newdata=data.frame(times=17))
-```
+<!-- predict(a, newdata=data.frame(times=17)) -->
 
-    ##         1 
-    ## -66.53594
+<!-- ``` -->
