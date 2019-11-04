@@ -66,7 +66,7 @@ phosphor[17, 'organic'] <- 15
 plot(plant ~ organic, data=phosphor, pch=19, col='gray50')
 ```
 
-As discussed in class, S-estimators, can be shown to solve
+We will discuss in class that S-estimators  can be shown to solve
 the first-order optimality conditions of an M-estimator of
 regression, computed using the final scale estimator
 (the one corresponding to the S-estimator). Although this
