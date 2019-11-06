@@ -25,7 +25,8 @@ a loss function in Tukey's family of bisquare functions.
 We compute a tuning constant that yields $$E(\rho(Z)) = 1/2$$,
 where $$Z$$ is a N(0,1) random variable. In this way we 
 obtain consistency of the M-scale estimator, and maximum 
-asymptotic breakdown point. 
+asymptotic breakdown point, which is 
+$$\min[ E(\rho(Z)), 1 - E(\rho(Z)) ]$$. 
 
 The following code uses the function `lmrobdet.control` to
 compute the tuning constant (given the family of functions 
