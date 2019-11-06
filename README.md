@@ -15,18 +15,24 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
 - Week 1: Oct 22 / 24
     - Introduction, motivation, goals, general setting (atypical observations).
     - Location / scale (**brief**); M estimators; The problem of scale.
-        - [Lecture 1 non-technical notes](Lecture1.md)
+        - [Lecture 1 non-technical notes](Lecture1.md) (source available as
+            [R Markdown](Lecture1.Rmd))
     - Contamination setting; Breakdown Point; "Bias", Influence Function.
     - Linear regression; M-estimators; The problem of scale.
     - Fixed designs;  Random covariates.  
     - M-estimators of scale; S-estimators of regression.
-        - [Lecture 2 non-technical notes](Lecture2.md)
+        - [Lecture 2 non-technical notes](Lecture2.md) (source available as
+            [R Markdown](Lecture2.Rmd))
 - Week 2: Oct 29 / 31
     - M-estimators of scale; S-estimators of regression; MM-estimators.
-    - (Algorithms for S- and MM-estimators; Regularized linear models. )
-    - Non-parametric regression;  Kernel smoothers; Splines; Additive Models
+    - (Algorithms for S- and MM-estimators)
+    - Non-parametric regression;  Kernel smoothers;
+    - Brief intro to additive models / curse of dimensionality
 - Week 3: Nov 5 / 7
-    - GLM, GAM, GPLAM
+    - [Practical / computational digression](Simple_examples.md) (source available as
+        [R Markdown](Simple_examples.Rmd) and the corresponding sandbox as a
+        [Jupyter Notebook](Simple_examples.ipynb))
+    - Additive models  + Splines
 - Week 4: Nov 12 / 14
     - Multivariate analysis
          - Estimation; Outlier detection; Depth; PCA.
