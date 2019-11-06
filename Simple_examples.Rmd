@@ -115,8 +115,18 @@ And also
 ```{r conv2}
 sis
 ```
+However, note that the objective function being minimized (the
+M-scale residual estimator as a function of regression coefficients)
+is not convex, and thus 
+there is no guarantee that this critical point is
+the global minimum. In real life we would need 
+to repeat the above calculations from many random
+starts (choosing them based on the data is a better
+strategy than selecting them "uniformly", for example),
+and select the critical point with the best 
+value of the objective function.  
 
-We now show the S-regression estimator, in red, and the least squares
+We now plot the S-regression estimator, in red, and the least squares
 one, in blue:
 ```{r aaa}
 beta.S <- beta
@@ -143,7 +153,9 @@ efficient M-estimator of regression, using residual scale associated
 with the S-estimator. The "rho" function is in the same 
 family, but the tuning constant changes. We also
 use 100 iterations, and note that we do not update the
-residual M-scale estimator:
+residual M-scale estimator. Furthermore, note that
+we start the iterations from the S-regression estimator
+computed above.
 ```{r a2}
 cc2 <- lmrobdet.control(family='bisquare', bb=.5)$tuning.psi
 for(j in 1:100) {
