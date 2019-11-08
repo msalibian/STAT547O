@@ -16,8 +16,10 @@ These notes are released under the
 See the **human-readable version** [here](https://creativecommons.org/licenses/by-sa/4.0/)
 and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode). 
 
-# Backfitting (robust and otherwise) "by hand"
 
+# DRAFT (Read at your own risk)
+
+## Backfitting (robust and otherwise) "by hand"
 
 We use the Air Quality data.
 To simplify the example, we will only use two explanatory variables

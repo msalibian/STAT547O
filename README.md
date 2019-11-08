@@ -33,6 +33,9 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
         [Jupyter Notebook](Simple_examples.ipynb)).
     - Algorithms for M-, S- and MM-regresssion estimators.
     - Additive models  + Splines.
+        - [Backfitting by hand](Example-backfitting.md) (source available as
+        [R Markdown](Example-backfitting.Rmd) and the corresponding sandbox as a
+        [Jupyter Notebook](aa)).
 - Week 4: Nov 12 / 14
     - Multivariate analysis
          - Estimation; Outlier detection; Depth; PCA.

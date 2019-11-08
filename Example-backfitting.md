@@ -12,7 +12,9 @@ Attribution-ShareAlike 4.0 International” license. See the
 thing**
 [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
 
-# Backfitting (robust and otherwise) “by hand”
+# DRAFT (Read at your own risk)
+
+## Backfitting (robust and otherwise) “by hand”
 
 We use the Air Quality data. To simplify the example, we will only use
 two explanatory variables (`Wind` and `Temp`):
