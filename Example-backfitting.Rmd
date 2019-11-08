@@ -75,6 +75,7 @@ f.hat.2 <- tmp2.f(x[,2])
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
 lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
 ```
+
 Finally, update `f.hat.3`:
 ```{r smooth.3}
 oo3 <- order(x[,3])
