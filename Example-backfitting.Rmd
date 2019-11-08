@@ -5,9 +5,9 @@ date: "`r format(Sys.Date())`"
 output: github_document
 ---
   
-  ```{r setup, include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width=5, fig.height=5, 
-message=FALSE, warning=FALSE)
+                      message=FALSE, warning=FALSE)
 ```
 
 #### LICENSE
@@ -126,7 +126,7 @@ lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue')
 
 ```
 
-Sanity check
+#### Sanity check
 ```{r trygam, message=FALSE, warning=FALSE}
 library(gam)
 dat <- as.data.frame(x)
@@ -147,6 +147,9 @@ plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
 lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
 lines(gg[oo3,3] ~ x[oo3,3], col='blue')
 
+f.hat.1.cl <- f.hat.1
+f.hat.2.cl <- f.hat.2
+f.hat.3.cl <- f.hat.3
 
 # head(cbind(f.hat.1, gg[,1]))
 # head(cbind(f.hat.2, gg[,2]))
@@ -155,6 +158,133 @@ lines(gg[oo3,3] ~ x[oo3,3], col='blue')
 # plot(f.hat.1, gg[,1]); abline(0,1)
 # plot(f.hat.2, gg[,2]); abline(0,1)
 # plot(f.hat.3, gg[,3]); abline(0,1)
+```
+
+### Robust BF
+For the robust one. Estimate sigma first (and keep it fixed)
+```{r rob1}
+library(RBF)
+bandw <- c(137, 9, 8)
+si.hat <- backf.rob(Xp=x, yp=y, windows=bandw)$sigma.hat
+```
+
+- Need a function f(x_0, x, y, sigma, cc, h) that returns the solution 
+`a` to 
+```{r funct}
+# mean( \rhoprime( (y-a)/sigma), cc=cc) * kernel((x-x_0)/h) = 0
+localM <- function(x0, x, y, sigma, 
+                   cc=RobStatTM::lmrobdet.control(family='bisquare',
+                                                         bb=.5)$tuning.psi, 
+                   h, tol=1e-5, max.it=100) {
+  ker.we <- RBF::k.epan((x - x0)/h)
+  ii <- which( abs(x-x0) < h) 
+  a0 <- median(y[ii])
+  beta <- coef( quantreg::rq(y ~ I(x-x0) + I((x-x0)^2), subset=ii) )
+  n <- length(y)
+  zz <- cbind(rep(1,n), x - x0, (x-x0)^2)
+  err <- 10*tol
+  j <- 0
+  while( (err > tol) & (j < max.it) ) {
+    beta.old <- beta
+    re <- as.vector(y - zz %*% beta)
+    ww1 <- RobStatTM::rhoprime(re/sigma, family='bisquare', cc=cc) / (re/sigma)
+    ww1[ is.nan(ww1) ] <- 1
+    ww <- ker.we * ww1
+    beta <- solve( t(zz) %*% (zz*ww), t(zz * ww) %*% y) 
+    err <- sqrt( sum( (beta - beta.old)^2 ) )
+    j <- j + 1
+  }
+  return(beta[1])
+}
+```
+
+```{r robust.onestep}
+alpha.hat <- RobStatTM::locScaleM(x=y, psi='bisquare')$mu
+n <- length(y)
+f.hat.1 <- f.hat.2 <- f.hat.3 <- rep(0, n)
+
+r.1 <- y - alpha.hat - f.hat.2 - f.hat.3
+oo <- order(x[,1])
+for(i in 1:n) 
+  f.hat.1[i] <- localM(x0=x[i,1], x=x[,1], y=r.1, sigma=si.hat, h=bandw[1])
+
+plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
+lines(f.hat.1[oo] ~ x[oo,1], col='red')
+
+oo2 <- order(x[,2])
+r.2 <- y - alpha.hat - f.hat.1 - f.hat.3
+for(i in 1:n) 
+  f.hat.2[i] <- localM(x0=x[i,2], x=x[,2], y=r.2, sigma=si.hat, h=bandw[2])
+
+plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
+ 
+oo3 <- order(x[,3])
+r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
+for(i in 1:n) 
+  f.hat.3[i] <- localM(x0=x[i,3], x=x[,3], y=r.3, sigma=si.hat, h=bandw[3])
+plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+```
+
+Robust iterations
+```{r robiter}
+f.hat.3 <- f.hat.3 - mean(f.hat.3)
+f.hat.2 <- f.hat.2 - mean(f.hat.2)
+f.hat.1 <- f.hat.1 - mean(f.hat.1)
+alpha.hat <- RobStatTM::locScaleM(x=y - f.hat.1 - f.hat.2 - f.hat.3,
+                                  psi='bisquare')$mu
+f.hat.1.orig <- f.hat.1
+f.hat.2.orig <- f.hat.2
+f.hat.3.orig <- f.hat.3
+
+for(i in 1:15) {
+  f.hat.1.old <- f.hat.1
+  f.hat.2.old <- f.hat.2
+  f.hat.3.old <- f.hat.3
+  
+  r.1 <- y - alpha.hat - f.hat.2 - f.hat.3
+  for(i in 1:n) 
+    f.hat.1[i] <- localM(x0=x[i,1], x=x[,1], y=r.1, sigma=si.hat, h=bandw[1])
+  
+  r.2 <- y - alpha.hat - f.hat.1 - f.hat.3
+  for(i in 1:n) 
+    f.hat.2[i] <- localM(x0=x[i,2], x=x[,2], y=r.2, sigma=si.hat, h=bandw[2])
+  
+  r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
+  for(i in 1:n) 
+    f.hat.3[i] <- localM(x0=x[i,3], x=x[,3], y=r.3, sigma=si.hat, h=bandw[3])
+  
+  f.hat.3 <- f.hat.3 - mean(f.hat.3)
+  f.hat.2 <- f.hat.2 - mean(f.hat.2)
+  f.hat.1 <- f.hat.1 - mean(f.hat.1)
+  
+  alpha.hat <- RobStatTM::locScaleM(x=y - f.hat.1 - f.hat.2 - f.hat.3,
+                                  psi='bisquare')$mu
+  
+  print(sqrt(mean((f.hat.1-f.hat.1.old)^2) + 
+               mean((f.hat.2-f.hat.2.old)^2) +
+               mean((f.hat.3-f.hat.3.old)^2)))
+}
+
+```
+
+Show
+```{r robiterplots}
+plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
+lines(f.hat.1[oo] ~ x[oo,1], col='red')
+lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue')
+lines(f.hat.1.cl[oo] ~ x[oo,1], col='magenta')
+
+plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
+lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue')
+lines(f.hat.2.cl[oo2] ~ x[oo2,2], col='magenta')
+
+plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue')
+lines(f.hat.3.cl[oo3] ~ x[oo3,3], col='magenta')
 ```
 
 
