@@ -55,11 +55,8 @@ r.1 <- y - alpha.hat - f.hat.2 - f.hat.3
 ```
 We smooth this vector of residuals as a function of `x1`
 ```{r smooth.1}
-library(KernSmooth)
 oo <- order(x[,1])
-tmp <- locpoly(x=x[,1], y=r.1, degree=1, bandwidth=bandw)
-tmp.f <- approxfun(x=tmp$x, y=tmp$y)
-f.hat.1 <- tmp.f(x[,1])
+f.hat.1 <- fitted( loess(r.1 ~ x[,1], span=.65, family='gaussian') ) 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
 lines(f.hat.1[oo] ~ x[oo,1], col='red')
 ```
@@ -69,9 +66,7 @@ as a function of `x2`,
 ```{r smooth.2}
 oo2 <- order(x[,2])
 r.2 <- y - alpha.hat - f.hat.1 - f.hat.3
-tmp2 <- locpoly(x=x[,2], y=r.2, degree=1, bandwidth=bandw)
-tmp2.f <- approxfun(x=tmp2$x, y=tmp2$y)
-f.hat.2 <- tmp2.f(x[,2])
+f.hat.2 <- fitted( loess(r.2 ~ x[,2], span=.65, family='gaussian') ) 
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
 lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
 ```
@@ -80,57 +75,55 @@ Finally, update `f.hat.3`:
 ```{r smooth.3}
 oo3 <- order(x[,3])
 r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
-tmp3 <- locpoly(x=x[,3], y=r.3, degree=1, bandwidth=bandw)
-tmp3.f <- approxfun(x=tmp3$x, y=tmp3$y)
-f.hat.3 <- tmp3.f(x[,3])
+f.hat.3 <- fitted( loess(r.3 ~ x[,3], span=.65, family='gaussian') ) 
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
 lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
 ```
+
 Iterate
 ```{r iterate}
 f.hat.3 <- f.hat.3 - mean(f.hat.3)
 f.hat.2 <- f.hat.2 - mean(f.hat.2)
 f.hat.1 <- f.hat.1 - mean(f.hat.1)
-for(i in 1:10) {
+f.hat.1.orig <- f.hat.1
+f.hat.2.orig <- f.hat.2
+f.hat.3.orig <- f.hat.3
+
+for(i in 1:15) {
   f.hat.1.old <- f.hat.1
   f.hat.2.old <- f.hat.2
   f.hat.3.old <- f.hat.3
   
-  r.1 <- y - alpha.hat - f.hat.2 -f.hat.3
-  tmp <- locpoly(x=x[,1], y=r.1, degree=1, bandwidth=bandw*10)
-  tmp.f <- approxfun(x=tmp$x, y=tmp$y)
-  f.hat.1 <- tmp.f(x[,1])
-  
+  r.1 <- y - alpha.hat - f.hat.2 - f.hat.3
+  f.hat.1 <- fitted( loess(r.1 ~ x[,1], span=.65, family='gaussian') ) 
+
   r.2 <- y - alpha.hat - f.hat.1 - f.hat.3
-  tmp2 <- locpoly(x=x[,2], y=r.2, degree=1, bandwidth=bandw)
-  tmp2.f <- approxfun(x=tmp2$x, y=tmp2$y)
-  f.hat.2 <- tmp2.f(x[,2])
-  
+  f.hat.2 <- fitted( loess(r.2 ~ x[,2], span=.65, family='gaussian') ) 
+
   r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
-  tmp3 <- locpoly(x=x[,3], y=r.3, degree=1, bandwidth=bandw)
-  tmp3.f <- approxfun(x=tmp3$x, y=tmp3$y)
-  f.hat.3 <- tmp3.f(x[,3])
-  
+  f.hat.3 <- fitted( loess(r.3 ~ x[,3], span=.65, family='gaussian') ) 
+
   f.hat.3 <- f.hat.3 - mean(f.hat.3)
   f.hat.2 <- f.hat.2 - mean(f.hat.2)
   f.hat.1 <- f.hat.1 - mean(f.hat.1)
   
-  print(mean(f.hat.1-f.hat.1.old)^2 + 
-          mean(f.hat.2-f.hat.2.old)^2 +
-          mean(f.hat.3-f.hat.3.old)^2)
+  print(sqrt(mean((f.hat.1-f.hat.1.old)^2) + 
+          mean((f.hat.2-f.hat.2.old)^2) +
+          mean((f.hat.3-f.hat.3.old)^2)))
 }
 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
 lines(f.hat.1[oo] ~ x[oo,1], col='red')
+lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue')
 
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
 lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
-
-plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
+lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue')
 
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
 lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue')
+
 ```
 
 Sanity check
@@ -150,15 +143,13 @@ plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
 lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
 lines(gg[oo2,2] ~ x[oo2,2], col='blue')
 
-head(cbind(f.hat.1, gg[,1]))
-head(cbind(f.hat.2, gg[,2]))
-head(cbind(f.hat.3, gg[,3]))
-
-plot(f.hat.1, gg[,1]); abline(0,1)
-plot(f.hat.2, gg[,2]); abline(0,1)
-plot(f.hat.3, gg[,3]); abline(0,1)
-
-
+# head(cbind(f.hat.1, gg[,1]))
+# head(cbind(f.hat.2, gg[,2]))
+# head(cbind(f.hat.3, gg[,3]))
+# 
+# plot(f.hat.1, gg[,1]); abline(0,1)
+# plot(f.hat.2, gg[,2]); abline(0,1)
+# plot(f.hat.3, gg[,3]); abline(0,1)
 ```
 
 
