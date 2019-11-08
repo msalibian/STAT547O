@@ -185,6 +185,14 @@ lines(gg[oo2,2] ~ x[oo2,2], col='blue')
 ![](Example-backfitting_files/figure-markdown_github/trygam-2.png)
 
 ``` r
+plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(gg[oo3,3] ~ x[oo3,3], col='blue')
+```
+
+![](Example-backfitting_files/figure-markdown_github/trygam-3.png)
+
+``` r
 # head(cbind(f.hat.1, gg[,1]))
 # head(cbind(f.hat.2, gg[,2]))
 # head(cbind(f.hat.3, gg[,3]))

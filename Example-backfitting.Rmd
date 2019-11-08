@@ -143,6 +143,11 @@ plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
 lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
 lines(gg[oo2,2] ~ x[oo2,2], col='blue')
 
+plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(gg[oo3,3] ~ x[oo3,3], col='blue')
+
+
 # head(cbind(f.hat.1, gg[,1]))
 # head(cbind(f.hat.2, gg[,2]))
 # head(cbind(f.hat.3, gg[,3]))
