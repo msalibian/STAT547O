@@ -53,12 +53,15 @@ We now compute *partial residuals* without using `f.hat.1`:
 ```{r partial.1}
 r.1 <- y - alpha.hat - f.hat.2 - f.hat.3
 ```
-We smooth this vector of residuals as a function of `x1`
+We smooth this vector of residuals as a function of `x1`.
+We will use a bandwidth of `span = .65`, this was 
+chosen subjectively, essentially just 
+by "eyeballing" the plots. It seems to work fine. 
 ```{r smooth.1}
 oo <- order(x[,1])
 f.hat.1 <- fitted( loess(r.1 ~ x[,1], span=.65, family='gaussian') ) 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
+lines(f.hat.1[oo] ~ x[oo,1], col='blue', lwd=3)
 ```
 
 Now, compute partial residuals without `f.hat.2` and smooth them 
@@ -68,7 +71,7 @@ oo2 <- order(x[,2])
 r.2 <- y - alpha.hat - f.hat.1 - f.hat.3
 f.hat.2 <- fitted( loess(r.2 ~ x[,2], span=.65, family='gaussian') ) 
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='blue', lwd=3)
 ```
 
 Finally, update `f.hat.3`:
@@ -77,10 +80,14 @@ oo3 <- order(x[,3])
 r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
 f.hat.3 <- fitted( loess(r.3 ~ x[,3], span=.65, family='gaussian') ) 
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='blue', lwd=3)
 ```
 
-Iterate
+Now perform 15 iterations (why 15? just because I thought they would
+be sufficient to converge). Just in case, below we also print the 
+approximated L2 norm of consecutive estimates, the
+square root of 
+$$\sum_{j=1}^3 \| \hat{f}_j^{(k+1)} - \hat{f}_j^{(k)} \|^2$$. 
 ```{r iterate}
 f.hat.3 <- f.hat.3 - mean(f.hat.3)
 f.hat.2 <- f.hat.2 - mean(f.hat.2)
@@ -111,22 +118,32 @@ for(i in 1:15) {
           mean((f.hat.2-f.hat.2.old)^2) +
           mean((f.hat.3-f.hat.3.old)^2)))
 }
+```
+Now plot the "final" estimates, and compare them with the
+initial ones:
+```{r iterate.show}
+plot(r.1 ~ x[,1], type='p', pch=19, col='gray30', main='L2')
+lines(f.hat.1[oo] ~ x[oo,1], col='red', lwd=3)
+lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue', lwd=3)
+legend('topleft', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
 
-plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
-lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue')
+plot(r.2 ~ x[,2], type='p', pch=19, col='gray30', main='L2')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='red', lwd=3)
+lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue', lwd=3)
+legend('topright', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
 
-plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
-lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue')
-
-plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
-lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue')
-
+plot(r.3 ~ x[,3], type='p', pch=19, col='gray30', main='L2')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red', lwd=3)
+lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue', lwd=3)
+legend('topleft', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
 ```
 
 #### Sanity check
+To verify that our algorithm produces reasonable
+results, we compare our "home made" estimates
+with those computed with `gam::gam()` (both 
+graphically and we look at their values). They 
+are of course not identical, but reassuringly close.
 ```{r trygam, message=FALSE, warning=FALSE}
 library(gam)
 dat <- as.data.frame(x)
@@ -136,50 +153,64 @@ gg <- predict(gam(Ozone ~ lo(Solar.R, span=.65) +
               type='terms')
 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
-lines(gg[oo,1] ~ x[oo,1], col='blue')
+lines(f.hat.1[oo] ~ x[oo,1], col='red', lwd=3)
+lines(gg[oo,1] ~ x[oo,1], col='blue', lwd=3)
+legend('topleft', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
 
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
-lines(gg[oo2,2] ~ x[oo2,2], col='blue')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='red', lwd=3)
+lines(gg[oo2,2] ~ x[oo2,2], col='blue', lwd=3)
+legend('topright', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
 
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
-lines(gg[oo3,3] ~ x[oo3,3], col='blue')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red', lwd=3)
+lines(gg[oo3,3] ~ x[oo3,3], col='blue', lwd=3)
+legend('topleft', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
 
 f.hat.1.cl <- f.hat.1
 f.hat.2.cl <- f.hat.2
 f.hat.3.cl <- f.hat.3
-
-# head(cbind(f.hat.1, gg[,1]))
-# head(cbind(f.hat.2, gg[,2]))
-# head(cbind(f.hat.3, gg[,3]))
-# 
-# plot(f.hat.1, gg[,1]); abline(0,1)
-# plot(f.hat.2, gg[,2]); abline(0,1)
-# plot(f.hat.3, gg[,3]); abline(0,1)
 ```
 
 ### Robust BF
-For the robust one. Estimate sigma first (and keep it fixed)
+We now compute robust estimators.  
+We first estimate `sigma` (the scale of the 
+errors), and we will keep it fixed.
+The function `RBF::backf.rob` does this, using a
+local median fit to obtain residuals. 
 ```{r rob1}
 library(RBF)
 bandw <- c(137, 9, 8)
 si.hat <- backf.rob(Xp=x, yp=y, windows=bandw)$sigma.hat
 ```
-
-- Need a function f(x_0, x, y, sigma, cc, h) that returns the solution 
-`a` to 
+The bandwidths above were computed using 
+robust cross validation and `RBF::backf.rob`. 
+We now need a robust alternative to `loess` (specifically, of 
+`predict( loess(...) )`). We will write our own function 
+to do this. 
+The following function `localM` computes a local M estimator
+using a polynomial of 2nd degree. Formally, given 
+the data (in the vectors `x` and `y`), the bandwidth
+`h`, an estimate of the residual scale `sigma`, and the
+choice of tuning parameters for `rho` (in this case we
+use Tukey's bisquare function), it computes the solution `a`
+to 
+```
+mean( \rhoprime( (y-a)/sigma), cc=cc) * kernel((x-x_0)/h) = 0
+```
+By default, `cc` is chosen using the 95% efficiency criterion
+for linear regression with Gaussian errors. There are two
+additional parameters to control the convergence of the 
+weighted least squares iterations. The algorithm is initialized
+using a (kernel)-weighted ("local") L1 estimator of regression
+(also using a 2nd degree polynomial). 
 ```{r funct}
-# mean( \rhoprime( (y-a)/sigma), cc=cc) * kernel((x-x_0)/h) = 0
 localM <- function(x0, x, y, sigma, 
                    cc=RobStatTM::lmrobdet.control(family='bisquare',
-                                                         bb=.5)$tuning.psi, 
+                                                  efficiency=.95)$tuning.psi, 
                    h, tol=1e-5, max.it=100) {
   ker.we <- RBF::k.epan((x - x0)/h)
-  ii <- which( abs(x-x0) < h) 
-  a0 <- median(y[ii])
-  beta <- coef( quantreg::rq(y ~ I(x-x0) + I((x-x0)^2), subset=ii) )
+  beta <- coef( quantreg::rq(y ~ I(x-x0) + I((x-x0)^2), weights=ker.we))
   n <- length(y)
   zz <- cbind(rep(1,n), x - x0, (x-x0)^2)
   err <- 10*tol
@@ -197,8 +228,16 @@ localM <- function(x0, x, y, sigma,
   return(beta[1])
 }
 ```
-
-```{r robust.onestep}
+Using this function, we run the first 
+step of the backfitting algorithm, exactly as before,
+but replacing `loess` with `localM`. Note that in this
+case we need to loop through the values of each 
+explanatory variable in the training set
+(`loess` does this internally when we call
+`predict`). We could do something similar using
+`RBF::backf.rob`, but it would not be as  
+"educational" as doing it by hand. 
+```{r robust.onestep, cache=TRUE}
 alpha.hat <- RobStatTM::locScaleM(x=y, psi='bisquare')$mu
 n <- length(y)
 f.hat.1 <- f.hat.2 <- f.hat.3 <- rep(0, n)
@@ -209,7 +248,7 @@ for(i in 1:n)
   f.hat.1[i] <- localM(x0=x[i,1], x=x[,1], y=r.1, sigma=si.hat, h=bandw[1])
 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
+lines(f.hat.1[oo] ~ x[oo,1], col='seagreen', lwd=3)
 
 oo2 <- order(x[,2])
 r.2 <- y - alpha.hat - f.hat.1 - f.hat.3
@@ -217,18 +256,18 @@ for(i in 1:n)
   f.hat.2[i] <- localM(x0=x[i,2], x=x[,2], y=r.2, sigma=si.hat, h=bandw[2])
 
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='seagreen', lwd=3)
  
 oo3 <- order(x[,3])
 r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
 for(i in 1:n) 
   f.hat.3[i] <- localM(x0=x[i,3], x=x[,3], y=r.3, sigma=si.hat, h=bandw[3])
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='seagreen', lwd=3)
 ```
 
 Robust iterations
-```{r robiter}
+```{r robiter, cache=TRUE}
 f.hat.3 <- f.hat.3 - mean(f.hat.3)
 f.hat.2 <- f.hat.2 - mean(f.hat.2)
 f.hat.1 <- f.hat.1 - mean(f.hat.1)

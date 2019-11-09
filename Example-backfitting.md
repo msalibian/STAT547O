@@ -1,7 +1,7 @@
 STAT547O - Backfitting notes
 ================
 Matias Salibian-Barrera
-2019-11-08
+2019-11-09
 
 #### LICENSE
 
@@ -56,13 +56,15 @@ We now compute *partial residuals* without using `f.hat.1`:
 r.1 <- y - alpha.hat - f.hat.2 - f.hat.3
 ```
 
-We smooth this vector of residuals as a function of `x1`
+We smooth this vector of residuals as a function of `x1`. We will use a
+bandwidth of `span = .65`, this was chosen subjectively, essentially
+just by “eyeballing” the plots. It seems to work fine.
 
 ``` r
 oo <- order(x[,1])
 f.hat.1 <- fitted( loess(r.1 ~ x[,1], span=.65, family='gaussian') ) 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
+lines(f.hat.1[oo] ~ x[oo,1], col='blue', lwd=3)
 ```
 
 ![](Example-backfitting_files/figure-gfm/smooth.1-1.png)<!-- -->
@@ -75,7 +77,7 @@ oo2 <- order(x[,2])
 r.2 <- y - alpha.hat - f.hat.1 - f.hat.3
 f.hat.2 <- fitted( loess(r.2 ~ x[,2], span=.65, family='gaussian') ) 
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='blue', lwd=3)
 ```
 
 ![](Example-backfitting_files/figure-gfm/smooth.2-1.png)<!-- -->
@@ -87,12 +89,15 @@ oo3 <- order(x[,3])
 r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
 f.hat.3 <- fitted( loess(r.3 ~ x[,3], span=.65, family='gaussian') ) 
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='blue', lwd=3)
 ```
 
 ![](Example-backfitting_files/figure-gfm/smooth.3-1.png)<!-- -->
 
-Iterate
+Now perform 15 iterations (why 15? just because I thought they would be
+sufficient to converge). Just in case, below we also print the
+approximated L2 norm of consecutive estimates, the square root of
+\[\sum_{j=1}^3 \| \hat{f}_j^{(k+1)} - \hat{f}_j^{(k)} \|^2\].
 
 ``` r
 f.hat.3 <- f.hat.3 - mean(f.hat.3)
@@ -142,31 +147,41 @@ for(i in 1:15) {
     ## [1] 8.061999e-06
     ## [1] 3.252211e-06
 
-``` r
-plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
-lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue')
-```
-
-![](Example-backfitting_files/figure-gfm/iterate-1.png)<!-- -->
+Now plot the “final” estimates, and compare them with the initial ones:
 
 ``` r
-plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
-lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue')
+plot(r.1 ~ x[,1], type='p', pch=19, col='gray30', main='L2')
+lines(f.hat.1[oo] ~ x[oo,1], col='red', lwd=3)
+lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue', lwd=3)
+legend('topleft', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
 ```
 
-![](Example-backfitting_files/figure-gfm/iterate-2.png)<!-- -->
+![](Example-backfitting_files/figure-gfm/iterate.show-1.png)<!-- -->
 
 ``` r
-plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
-lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue')
+plot(r.2 ~ x[,2], type='p', pch=19, col='gray30', main='L2')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='red', lwd=3)
+lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue', lwd=3)
+legend('topright', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
 ```
 
-![](Example-backfitting_files/figure-gfm/iterate-3.png)<!-- -->
+![](Example-backfitting_files/figure-gfm/iterate.show-2.png)<!-- -->
+
+``` r
+plot(r.3 ~ x[,3], type='p', pch=19, col='gray30', main='L2')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red', lwd=3)
+lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue', lwd=3)
+legend('topleft', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
+```
+
+![](Example-backfitting_files/figure-gfm/iterate.show-3.png)<!-- -->
 
 #### Sanity check
+
+To verify that our algorithm produces reasonable results, we compare our
+“home made” estimates with those computed with `gam::gam()` (both
+graphically and we look at their values). They are of course not
+identical, but reassuringly close.
 
 ``` r
 library(gam)
@@ -177,24 +192,27 @@ gg <- predict(gam(Ozone ~ lo(Solar.R, span=.65) +
               type='terms')
 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
-lines(gg[oo,1] ~ x[oo,1], col='blue')
+lines(f.hat.1[oo] ~ x[oo,1], col='red', lwd=3)
+lines(gg[oo,1] ~ x[oo,1], col='blue', lwd=3)
+legend('topleft', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
 ```
 
 ![](Example-backfitting_files/figure-gfm/trygam-1.png)<!-- -->
 
 ``` r
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
-lines(gg[oo2,2] ~ x[oo2,2], col='blue')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='red', lwd=3)
+lines(gg[oo2,2] ~ x[oo2,2], col='blue', lwd=3)
+legend('topright', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
 ```
 
 ![](Example-backfitting_files/figure-gfm/trygam-2.png)<!-- -->
 
 ``` r
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
-lines(gg[oo3,3] ~ x[oo3,3], col='blue')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='red', lwd=3)
+lines(gg[oo3,3] ~ x[oo3,3], col='blue', lwd=3)
+legend('topleft', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
 ```
 
 ![](Example-backfitting_files/figure-gfm/trygam-3.png)<!-- -->
@@ -203,19 +221,14 @@ lines(gg[oo3,3] ~ x[oo3,3], col='blue')
 f.hat.1.cl <- f.hat.1
 f.hat.2.cl <- f.hat.2
 f.hat.3.cl <- f.hat.3
-
-# head(cbind(f.hat.1, gg[,1]))
-# head(cbind(f.hat.2, gg[,2]))
-# head(cbind(f.hat.3, gg[,3]))
-# 
-# plot(f.hat.1, gg[,1]); abline(0,1)
-# plot(f.hat.2, gg[,2]); abline(0,1)
-# plot(f.hat.3, gg[,3]); abline(0,1)
 ```
 
 ### Robust BF
 
-For the robust one. Estimate sigma first (and keep it fixed)
+We now compute robust estimators.  
+We first estimate `sigma` (the scale of the errors), and we will keep it
+fixed. The function `RBF::backf.rob` does this, using a local median fit
+to obtain residuals.
 
 ``` r
 library(RBF)
@@ -223,21 +236,30 @@ bandw <- c(137, 9, 8)
 si.hat <- backf.rob(Xp=x, yp=y, windows=bandw)$sigma.hat
 ```
 
-  - Need a function f(x\_0, x, y, sigma, cc, h) that returns the
-    solution `a` to
+The bandwidths above were computed using robust cross validation and
+`RBF::backf.rob`. We now need a robust alternative to `loess`
+(specifically, of `predict( loess(...) )`). We will write our own
+function to do this. The following function `localM` computes a local M
+estimator using a polynomial of 2nd degree. Formally, given the data (in
+the vectors `x` and `y`), the bandwidth `h`, an estimate of the residual
+scale `sigma`, and the choice of tuning parameters for `rho` (in this
+case we use Tukey’s bisquare function), it computes the solution `a` to
 
-<!-- end list -->
+    mean( \rhoprime( (y-a)/sigma), cc=cc) * kernel((x-x_0)/h) = 0
+
+By default, `cc` is chosen using the 95% efficiency criterion for linear
+regression with Gaussian errors. There are two additional parameters to
+control the convergence of the weighted least squares iterations. The
+algorithm is initialized using a (kernel)-weighted (“local”) L1
+estimator of regression (also using a 2nd degree polynomial).
 
 ``` r
-# mean( \rhoprime( (y-a)/sigma), cc=cc) * kernel((x-x_0)/h) = 0
 localM <- function(x0, x, y, sigma, 
                    cc=RobStatTM::lmrobdet.control(family='bisquare',
-                                                         bb=.5)$tuning.psi, 
+                                                  efficiency=.95)$tuning.psi, 
                    h, tol=1e-5, max.it=100) {
   ker.we <- RBF::k.epan((x - x0)/h)
-  ii <- which( abs(x-x0) < h) 
-  a0 <- median(y[ii])
-  beta <- coef( quantreg::rq(y ~ I(x-x0) + I((x-x0)^2), subset=ii) )
+  beta <- coef( quantreg::rq(y ~ I(x-x0) + I((x-x0)^2), weights=ker.we))
   n <- length(y)
   zz <- cbind(rep(1,n), x - x0, (x-x0)^2)
   err <- 10*tol
@@ -256,6 +278,14 @@ localM <- function(x0, x, y, sigma,
 }
 ```
 
+Using this function, we run the first step of the backfitting algorithm,
+exactly as before, but replacing `loess` with `localM`. Note that in
+this case we need to loop through the values of each explanatory
+variable in the training set (`loess` does this internally when we call
+`predict`). We could do something similar using `RBF::backf.rob`, but it
+would not be as  
+“educational” as doing it by hand.
+
 ``` r
 alpha.hat <- RobStatTM::locScaleM(x=y, psi='bisquare')$mu
 n <- length(y)
@@ -267,7 +297,7 @@ for(i in 1:n)
   f.hat.1[i] <- localM(x0=x[i,1], x=x[,1], y=r.1, sigma=si.hat, h=bandw[1])
 
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
+lines(f.hat.1[oo] ~ x[oo,1], col='seagreen', lwd=3)
 ```
 
 ![](Example-backfitting_files/figure-gfm/robust.onestep-1.png)<!-- -->
@@ -279,7 +309,7 @@ for(i in 1:n)
   f.hat.2[i] <- localM(x0=x[i,2], x=x[,2], y=r.2, sigma=si.hat, h=bandw[2])
 
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='seagreen', lwd=3)
 ```
 
 ![](Example-backfitting_files/figure-gfm/robust.onestep-2.png)<!-- -->
@@ -290,7 +320,7 @@ r.3 <- y - alpha.hat - f.hat.1 - f.hat.2
 for(i in 1:n) 
   f.hat.3[i] <- localM(x0=x[i,3], x=x[,3], y=r.3, sigma=si.hat, h=bandw[3])
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='seagreen', lwd=3)
 ```
 
 ![](Example-backfitting_files/figure-gfm/robust.onestep-3.png)<!-- -->
@@ -337,21 +367,21 @@ for(i in 1:15) {
 }
 ```
 
-    ## [1] 11.47695
-    ## [1] 4.377791
-    ## [1] 2.005231
-    ## [1] 0.8529065
-    ## [1] 0.3440642
-    ## [1] 0.1327937
-    ## [1] 0.04908799
-    ## [1] 0.0173641
-    ## [1] 0.005869713
-    ## [1] 0.001895551
-    ## [1] 0.0005904193
-    ## [1] 0.0001858384
-    ## [1] 6.585863e-05
-    ## [1] 2.773783e-05
-    ## [1] 1.261046e-05
+    ## [1] 11.47662
+    ## [1] 4.37787
+    ## [1] 2.005267
+    ## [1] 0.8529219
+    ## [1] 0.3440702
+    ## [1] 0.1327956
+    ## [1] 0.049089
+    ## [1] 0.01736437
+    ## [1] 0.005869899
+    ## [1] 0.001895617
+    ## [1] 0.0005904411
+    ## [1] 0.0001858448
+    ## [1] 6.586016e-05
+    ## [1] 2.773819e-05
+    ## [1] 1.26106e-05
 
 Show
 
