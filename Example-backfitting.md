@@ -16,11 +16,15 @@ thing**
 
 ## Backfitting (robust and otherwise) “by hand”
 
-We use the Air Quality data. To simplify the example, we will only use
-two explanatory variables (`Wind` and `Temp`):
+In these notes we apply the backfitting algorithm to estimate the
+components of an additive model for the Air Quality Data (available in
+`R` in package `datasets`). The goal is to illustrate how backfitting
+works, and compare the classical (“L2”) and robust estimators for an
+additive model. First we construct the response vector `y` and the
+“design matrix” `x` that contains the three available explanatory
+variables:
 
 ``` r
-library(RBF)
 data(airquality)
 x <- airquality
 x <- x[ complete.cases(x), ]
@@ -29,7 +33,7 @@ y <- as.vector(x$Ozone)
 x <- as.matrix(x[, c('Solar.R', 'Wind', 'Temp')])
 ```
 
-A scatter plot of the data
+We use all the pairwise plots to take a very quick look at the data:
 
 ``` r
 pairs(cbind(y,x), labels=c('Ozone', colnames(x)), pch=19, col='gray30', cex=1.5)
@@ -39,38 +43,60 @@ pairs(cbind(y,x), labels=c('Ozone', colnames(x)), pch=19, col='gray30', cex=1.5)
 
 ### Classical backfitting
 
-The algorithm starts with the estimated intercept (equal to the sample
-mean of the response), and all the components of the additive model set
-to zero:
+As we discussed in class, the classical backfitting algorithm is used to
+estimate the components of an additive regression model. More
+specifically, the algorithm is an iterative procedure to find a solution
+to the first-order system of equations. There are two loops: the inner
+loop iterates over the components of the additive model, and the outer
+loop repeats this until a convergence (or stopping) criterion is
+satisfied.
+
+It is easy to see that in the L2 case the estimated intercept is the
+mean of the response, so the algorithm starts setting the intercept
+estimator equal to the sample mean of the vector of responses. In
+addition, all the components of the additive model are initialized at
+zero:
 
 ``` r
 alpha.hat <- mean(y)
 n <- length(y)
-bandw <- 5
 f.hat.1 <- f.hat.2 <- f.hat.3 <- rep(0, n)
 ```
 
-We now compute *partial residuals* without using `f.hat.1`:
+To start the first step of the inner loop we compute *partial residuals*
+without using `f.hat.1`:
 
 ``` r
 r.1 <- y - alpha.hat - f.hat.2 - f.hat.3
 ```
 
-We smooth this vector of residuals as a function of `x1`. We will use a
-bandwidth of `span = .65`, this was chosen subjectively, essentially
-just by “eyeballing” the plots. It seems to work fine.
+To estimate the function \[\hat{f}_1(a) = E(R_1 | X_1 = a)\] we use a
+kernel local regression estimator to smooth the vector of partial
+residuals `r.1` above as a function of `x1`. In what follows we will use
+the function `loess` to compute a local polynomial regression estimator,
+with a bandwidth of `span = .65`. The latter was chosen subjectively
+(essentially by “eyeballing” the plots so that they look reasonable). In
+practice one would need a principled approach to this
+(e.g. cross-validation).
 
 ``` r
 oo <- order(x[,1])
 f.hat.1 <- fitted( loess(r.1 ~ x[,1], span=.65, family='gaussian') ) 
+```
+
+We look at the resulting smoother:
+
+``` r
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
 lines(f.hat.1[oo] ~ x[oo,1], col='blue', lwd=3)
 ```
 
-![](Example-backfitting_files/figure-gfm/smooth.1-1.png)<!-- -->
+![](Example-backfitting_files/figure-gfm/smooth.1.plot-1.png)<!-- -->
 
-Now, compute partial residuals without `f.hat.2` and smooth them as a
-function of `x2`,
+The next step of the inner loop is to compute partial residuals without
+`f.hat.2` and smooth them as a function of `x2`. The code below does
+this and also displays the resulting estimator of the function
+\[\hat{f}_2(a) = E(R_2 | X_2 = a)\]:
 
 ``` r
 oo2 <- order(x[,2])
@@ -82,7 +108,7 @@ lines(f.hat.2[oo2] ~ x[oo2,2], col='blue', lwd=3)
 
 ![](Example-backfitting_files/figure-gfm/smooth.2-1.png)<!-- -->
 
-Finally, update `f.hat.3`:
+Finally, we repeat the above to compute an estimator for \[\hat{f}_3\]:
 
 ``` r
 oo3 <- order(x[,3])
@@ -94,19 +120,31 @@ lines(f.hat.3[oo3] ~ x[oo3,3], col='blue', lwd=3)
 
 ![](Example-backfitting_files/figure-gfm/smooth.3-1.png)<!-- -->
 
-Now perform 15 iterations (why 15? just because I thought they would be
-sufficient to converge). Just in case, below we also print the
-approximated L2 norm of consecutive estimates, the square root of
-\[\sum_{j=1}^3 \| \hat{f}_j^{(k+1)} - \hat{f}_j^{(k)} \|^2\].
+Finally, we center our estimated components of the additive model, since
+they are constrained to satisfy \[E(f_j(X_j)) = 0\].
 
 ``` r
 f.hat.3 <- f.hat.3 - mean(f.hat.3)
 f.hat.2 <- f.hat.2 - mean(f.hat.2)
 f.hat.1 <- f.hat.1 - mean(f.hat.1)
+```
+
+I will also save these 1st-step estimates to compare them with the final
+ones below.
+
+``` r
 f.hat.1.orig <- f.hat.1
 f.hat.2.orig <- f.hat.2
 f.hat.3.orig <- f.hat.3
+```
 
+We have now completed **one** pass of the inner loop. We now perform 15
+iterations of this loop. Why 15? Only because I thought they would be
+enough for convergence. Just in case, below we also print the
+approximated L2 norm of consecutive estimates, the square root of
+\[\sum_{j=1}^3 \| \hat{f}_j^{(k+1)} - \hat{f}_j^{(k)} \|^2\].
+
+``` r
 for(i in 1:15) {
   f.hat.1.old <- f.hat.1
   f.hat.2.old <- f.hat.2
@@ -147,7 +185,8 @@ for(i in 1:15) {
     ## [1] 8.061999e-06
     ## [1] 3.252211e-06
 
-Now plot the “final” estimates, and compare them with the initial ones:
+We see that the algorithm converges rather quickly. Now plot the “final”
+estimates, and compare them with the initial ones:
 
 ``` r
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30', main='L2')
@@ -176,12 +215,17 @@ legend('topleft', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
 
 ![](Example-backfitting_files/figure-gfm/iterate.show-3.png)<!-- -->
 
+**NOTE** that the above comparisons between the initial estimators and
+the final ones is not completely accurate, as the partial residuals in
+each plot (the “dots”) actually depend on the estimated regression
+functions.
+
 #### Sanity check
 
-To verify that our algorithm produces reasonable results, we compare our
-“home made” estimates with those computed with `gam::gam()` (both
-graphically and we look at their values). They are of course not
-identical, but reassuringly close.
+To verify that our code above does in fact produce reasonable results,
+we compare our “home made” estimates with those computed with
+`gam::gam()` (both graphically and we look at their values). They are of
+course not identical, but reassuringly close.
 
 ``` r
 library(gam)
@@ -217,6 +261,9 @@ legend('topleft', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red')
 
 ![](Example-backfitting_files/figure-gfm/trygam-3.png)<!-- -->
 
+I will also save our “final” estimators to compare them with the robust
+ones below:
+
 ``` r
 f.hat.1.cl <- f.hat.1
 f.hat.2.cl <- f.hat.2
@@ -225,33 +272,53 @@ f.hat.3.cl <- f.hat.3
 
 ### Robust BF
 
-We now compute robust estimators.  
-We first estimate `sigma` (the scale of the errors), and we will keep it
-fixed. The function `RBF::backf.rob` does this, using a local median fit
-to obtain residuals.
+We now turn our attention to robust estimators for the components of an
+additive model. As we discussed in class, given a loss function `rho` we
+need to estimate the functions \[\tilde{f}_j(a)\] that solve
+\[E( \rho'((R_j - \hat{f}_j(a))/\sigma) 
+| X_j = a) = 0\], which are the first order conditions of the
+corresponding “robust” optimization problem. Note that now the intercept
+estimator solves \[E( \rho'((R_j - \hat{\alpha}))/\sigma) ) = 0\], and
+thus needs to be updated at the end of each iteration of the inner loop
+(unlike what happened in the L2 case). Also note that we need an
+estimate for `sigma`, the scale of the errors, which will remain fixed
+throughout the rest of the computations. We use the function
+`RBF::backf.rob` that computes such an estimator using a the residuals
+with respect to a local median fit.
 
 ``` r
-library(RBF)
 bandw <- c(137, 9, 8)
-si.hat <- backf.rob(Xp=x, yp=y, windows=bandw)$sigma.hat
+si.hat <- RBF::backf.rob(Xp=x, yp=y, windows=bandw)$sigma.hat
 ```
 
-The bandwidths above were computed using robust cross validation and
-`RBF::backf.rob`. We now need a robust alternative to `loess`
-(specifically, of `predict( loess(...) )`). We will write our own
-function to do this. The following function `localM` computes a local M
-estimator using a polynomial of 2nd degree. Formally, given the data (in
-the vectors `x` and `y`), the bandwidth `h`, an estimate of the residual
-scale `sigma`, and the choice of tuning parameters for `rho` (in this
-case we use Tukey’s bisquare function), it computes the solution `a` to
+The bandwidths above were originally computed using robust cross
+validation and the implementation of this robust backfitting in
+`RBF::backf.rob`.
+
+We now need a robust alternative to `loess` (specifically, of `predict(
+loess(...) )`). We will write our own function to do this. The following
+function `localM` computes a local M-estimator of regression, using a
+polynomial of 2nd degree. Formally, given:
+
+  - the data (in the vectors `x` and `y`);
+  - the bandwidth `h`;
+  - the point `x0` at which we want to compute \[\hat{f}(x_0)\];
+  - an estimate of the residual scale `sigma`; and
+  - the choice of tuning parameters for `rho` (in this case we use
+    Tukey’s bisquare function),
+
+the function `localM` computes the solution `a` to
 
     mean( \rhoprime( (y-a)/sigma), cc=cc) * kernel((x-x_0)/h) = 0
 
-By default, `cc` is chosen using the 95% efficiency criterion for linear
-regression with Gaussian errors. There are two additional parameters to
-control the convergence of the weighted least squares iterations. The
-algorithm is initialized using a (kernel)-weighted (“local”) L1
-estimator of regression (also using a 2nd degree polynomial).
+By default, `cc` is chosen to achieve 95% asymptotic efficiency for
+linear regression models with Gaussian errors.
+
+Our function `localM` also accepts two additional parameters (`tol` and
+`max.it`) to control the convergence of the weighted least squares
+iterations. The algorithm is initialized using a (kernel) weighted
+(“local”) L1 estimator of regression (also using a 2nd degree
+polynomial).
 
 ``` r
 localM <- function(x0, x, y, sigma, 
@@ -279,12 +346,22 @@ localM <- function(x0, x, y, sigma,
 ```
 
 Using this function, we run the first step of the backfitting algorithm,
-exactly as before, but replacing `loess` with `localM`. Note that in
-this case we need to loop through the values of each explanatory
-variable in the training set (`loess` does this internally when we call
-`predict`). We could do something similar using `RBF::backf.rob`, but it
-would not be as  
-“educational” as doing it by hand.
+exactly as before, but replacing `predict(loess(...))` with
+`localM(...)`. Note, however, that in this case we need to loop through
+the values of each explanatory variable in the training set (`loess`
+does this internally when we call `predict`). In fact, the function
+`RBF::backf.rob` does this, but the objective of these notes is to do it
+“by hand”.
+
+Here is the first pass of the inner loop. The additive model components
+are initialized at zero, and the intercept is estimated using the
+function `RobStaTM::locScaleM` which computes an M-estimator of
+location. **Note** that this is in fact only an approximation to what we
+need, since `locScaleM` computes its own residual scale estimator.
+Although it would be more appropriate to write our own function to
+compute our intercept estimator, this is not really the objective of
+these notes. In fact, we leave this task to the reader as a very good
+exercise.
 
 ``` r
 alpha.hat <- RobStatTM::locScaleM(x=y, psi='bisquare')$mu
@@ -325,7 +402,9 @@ lines(f.hat.3[oo3] ~ x[oo3,3], col='seagreen', lwd=3)
 
 ![](Example-backfitting_files/figure-gfm/robust.onestep-3.png)<!-- -->
 
-Robust iterations
+As before, we center the estimated components of the model, and now also
+update the intercept estimator (we also save this *1st step* estimator
+for later):
 
 ``` r
 f.hat.3 <- f.hat.3 - mean(f.hat.3)
@@ -336,7 +415,12 @@ alpha.hat <- RobStatTM::locScaleM(x=y - f.hat.1 - f.hat.2 - f.hat.3,
 f.hat.1.orig <- f.hat.1
 f.hat.2.orig <- f.hat.2
 f.hat.3.orig <- f.hat.3
+```
 
+We use 15 iterations and display a possible convergence criterion to
+monitor the iterations:
+
+``` r
 for(i in 1:15) {
   f.hat.1.old <- f.hat.1
   f.hat.2.old <- f.hat.2
@@ -383,31 +467,45 @@ for(i in 1:15) {
     ## [1] 2.773819e-05
     ## [1] 1.26106e-05
 
-Show
+We now look at the robust estimators:
 
 ``` r
-plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
-lines(f.hat.1[oo] ~ x[oo,1], col='red')
-lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue')
-lines(f.hat.1.cl[oo] ~ x[oo,1], col='magenta')
+plot(r.1 ~ x[,1], type='p', pch=19, col='gray30', main='Robust')
+lines(f.hat.1[oo] ~ x[oo,1], col='green', lwd=3)
+lines(f.hat.1.orig[oo] ~ x[oo,1], col='seagreen', lwd=3)
+lines(f.hat.1.cl[oo] ~ x[oo,1], col='magenta', lwd=3)
+legend('topleft', legend=c('Robust Final', 'Robust Initial', 'L2 final'), 
+       lwd=3, col=c('green', 'seagreen', 'magenta'))
 ```
 
 ![](Example-backfitting_files/figure-gfm/robiterplots-1.png)<!-- -->
 
 ``` r
-plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
-lines(f.hat.2[oo2] ~ x[oo2,2], col='red')
-lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue')
-lines(f.hat.2.cl[oo2] ~ x[oo2,2], col='magenta')
+plot(r.2 ~ x[,2], type='p', pch=19, col='gray30', main='Robust')
+lines(f.hat.2[oo2] ~ x[oo2,2], col='green', lwd=3)
+lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='seagreen', lwd=3)
+lines(f.hat.2.cl[oo2] ~ x[oo2,2], col='magenta', lwd=3)
+legend('topright', legend=c('Robust Final', 'Robust Initial', 'L2 final'), 
+       lwd=3, col=c('green', 'seagreen', 'magenta'))
 ```
 
 ![](Example-backfitting_files/figure-gfm/robiterplots-2.png)<!-- -->
 
 ``` r
-plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
-lines(f.hat.3[oo3] ~ x[oo3,3], col='red')
-lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue')
-lines(f.hat.3.cl[oo3] ~ x[oo3,3], col='magenta')
+plot(r.3 ~ x[,3], type='p', pch=19, col='gray30', main='Robust')
+lines(f.hat.3[oo3] ~ x[oo3,3], col='green', lwd=3)
+lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='seagreen', lwd=3)
+lines(f.hat.3.cl[oo3] ~ x[oo3,3], col='magenta', lwd=3)
+legend('topleft', legend=c('Robust Final', 'Robust Initial', 'L2 final'), 
+       lwd=3, col=c('green', 'seagreen', 'magenta'))
 ```
 
 ![](Example-backfitting_files/figure-gfm/robiterplots-3.png)<!-- -->
+
+**NOTE** that the above comparisons between the two estimators should be
+used only as an approximation, as the partial residuals in each plot
+(the “dots”) actually depend on the estimated regression functions.
+
+#### Which one is “right” or “better”?
+
+Suggestion: compare predictions\!
