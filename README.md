@@ -35,7 +35,7 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
     - Additive models  + Splines.
         - [Backfitting by hand](Example-backfitting.md) (source available as
         [R Markdown](Example-backfitting.Rmd) and the corresponding sandbox as a
-        [Jupyter Notebook](aa)).
+        [Jupyter Notebook](Example-backfitting.ipynb)).
 - Week 4: Nov 12 / 14
     - Multivariate analysis
          - Estimation; Outlier detection; Depth; PCA.
