@@ -1,7 +1,7 @@
 STAT547O - Backfitting notes
 ================
 Matias Salibian-Barrera
-2019-11-09
+2019-11-11
 
 #### LICENSE
 
@@ -18,11 +18,14 @@ thing**
 
 In these notes we apply the backfitting algorithm to estimate the
 components of an additive model for the Air Quality Data (available in
-`R` in package `datasets`). The goal is to illustrate how backfitting
-works, and compare the classical (“L2”) and robust estimators for an
-additive model. First we construct the response vector `y` and the
-“design matrix” `x` that contains the three available explanatory
-variables:
+`R` in package `datasets`). The goals are to illustrate in detail the
+steps of the algorithm for both the classical (“L2”) and robust cases,
+and also to compare the resulting estimates. The L2 backfitting
+algorithm with local polynomial smoothers is implemented in `gam::gam()`
+and the robust version in `RBF::backf.rob`.
+
+First we construct the response vector `y` and the “design matrix” `x`
+that contains the three available explanatory variables:
 
 ``` r
 data(airquality)
@@ -33,7 +36,9 @@ y <- as.vector(x$Ozone)
 x <- as.matrix(x[, c('Solar.R', 'Wind', 'Temp')])
 ```
 
-We use all the pairwise plots to take a very quick look at the data:
+The plot below show all the pairwise scatterplots, and is a simple
+exploratory tool (note that nothing out of the ordinary is apparent in
+the data):
 
 ``` r
 pairs(cbind(y,x), labels=c('Ozone', colnames(x)), pch=19, col='gray30', cex=1.5)
@@ -46,10 +51,10 @@ pairs(cbind(y,x), labels=c('Ozone', colnames(x)), pch=19, col='gray30', cex=1.5)
 As we discussed in class, the classical backfitting algorithm is used to
 estimate the components of an additive regression model. More
 specifically, the algorithm is an iterative procedure to find a solution
-to the first-order system of equations. There are two loops: the inner
-loop iterates over the components of the additive model, and the outer
-loop repeats this until a convergence (or stopping) criterion is
-satisfied.
+to the first-order system of equations for the L2 loss. There are two
+loops: the inner loop iterates over the components of the additive
+model, and the outer loop repeats the outer loop until a convergence (or
+stopping) criterion is satisfied.
 
 It is easy to see that in the L2 case the estimated intercept is the
 mean of the response, so the algorithm starts setting the intercept
@@ -76,7 +81,7 @@ residuals `r.1` above as a function of `x1`. In what follows we will use
 the function `loess` to compute a local polynomial regression estimator,
 with a bandwidth of `span = .65`. The latter was chosen subjectively
 (essentially by “eyeballing” the plots so that they look reasonable). In
-practice one would need a principled approach to this
+practice one would need a principled approach for this
 (e.g. cross-validation).
 
 ``` r
@@ -138,11 +143,12 @@ f.hat.2.orig <- f.hat.2
 f.hat.3.orig <- f.hat.3
 ```
 
-We have now completed **one** pass of the inner loop. We now perform 15
-iterations of this loop. Why 15? Only because I thought they would be
-enough for convergence. Just in case, below we also print the
-approximated L2 norm of consecutive estimates, the square root of
-\[\sum_{j=1}^3 \| \hat{f}_j^{(k+1)} - \hat{f}_j^{(k)} \|^2\].
+We have now completed **the first** pass of the inner loop. The next
+code chunk perform 15 more iterations of this loop. Why 15? Only because
+I thought they would be enough for convergence. Just in case, I also
+print the approximated L2 norm of consecutive estimates (the square root
+of \[\sum_{j=1}^3 \| \hat{f}_j^{(k+1)} - \hat{f}_j^{(k)} \|^2\]) to
+check that the algorithm is indeed converging.
 
 ``` r
 for(i in 1:15) {
@@ -185,35 +191,29 @@ for(i in 1:15) {
     ## [1] 8.061999e-06
     ## [1] 3.252211e-06
 
-We see that the algorithm converges rather quickly. Now plot the “final”
-estimates, and compare them with the initial ones:
+Indeed, the algorithm converges well.  
+We now plot the “final” estimates, and compare them with the initial
+ones:
 
 ``` r
+par(mfrow=c(2,2))
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30', main='L2')
 lines(f.hat.1[oo] ~ x[oo,1], col='red', lwd=3)
 lines(f.hat.1.orig[oo] ~ x[oo,1], col='blue', lwd=3)
 legend('topleft', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
-```
 
-![](Example-backfitting_files/figure-gfm/iterate.show-1.png)<!-- -->
-
-``` r
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30', main='L2')
 lines(f.hat.2[oo2] ~ x[oo2,2], col='red', lwd=3)
 lines(f.hat.2.orig[oo2] ~ x[oo2,2], col='blue', lwd=3)
 legend('topright', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
-```
 
-![](Example-backfitting_files/figure-gfm/iterate.show-2.png)<!-- -->
-
-``` r
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30', main='L2')
 lines(f.hat.3[oo3] ~ x[oo3,3], col='red', lwd=3)
 lines(f.hat.3.orig[oo3] ~ x[oo3,3], col='blue', lwd=3)
 legend('topleft', legend=c('Start', 'End'), lwd=3, col=c('blue', 'red'))
 ```
 
-![](Example-backfitting_files/figure-gfm/iterate.show-3.png)<!-- -->
+![](Example-backfitting_files/figure-gfm/iterate.show-1.png)<!-- -->
 
 **NOTE** that the above comparisons between the initial estimators and
 the final ones is not completely accurate, as the partial residuals in
@@ -234,32 +234,24 @@ dat$Ozone <- y
 gg <- predict(gam(Ozone ~ lo(Solar.R, span=.65) +
                   lo(Wind, span=.65) + lo(Temp, span=.65), data=dat),
               type='terms')
-
+par(mfrow=c(2,2))
 plot(r.1 ~ x[,1], type='p', pch=19, col='gray30')
 lines(f.hat.1[oo] ~ x[oo,1], col='red', lwd=3)
 lines(gg[oo,1] ~ x[oo,1], col='blue', lwd=3)
 legend('topleft', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
-```
 
-![](Example-backfitting_files/figure-gfm/trygam-1.png)<!-- -->
-
-``` r
 plot(r.2 ~ x[,2], type='p', pch=19, col='gray30')
 lines(f.hat.2[oo2] ~ x[oo2,2], col='red', lwd=3)
 lines(gg[oo2,2] ~ x[oo2,2], col='blue', lwd=3)
 legend('topright', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
-```
 
-![](Example-backfitting_files/figure-gfm/trygam-2.png)<!-- -->
-
-``` r
 plot(r.3 ~ x[,3], type='p', pch=19, col='gray30')
 lines(f.hat.3[oo3] ~ x[oo3,3], col='red', lwd=3)
 lines(gg[oo3,3] ~ x[oo3,3], col='blue', lwd=3)
 legend('topleft', legend=c('gam::gam', 'Home made'), lwd=3, col=c('blue', 'red'))
 ```
 
-![](Example-backfitting_files/figure-gfm/trygam-3.png)<!-- -->
+![](Example-backfitting_files/figure-gfm/trygam-1.png)<!-- -->
 
 I will also save our “final” estimators to compare them with the robust
 ones below:
@@ -292,13 +284,13 @@ si.hat <- RBF::backf.rob(Xp=x, yp=y, windows=bandw)$sigma.hat
 ```
 
 The bandwidths above were originally computed using robust cross
-validation and the implementation of this robust backfitting in
-`RBF::backf.rob`.
+validation (on a 3-dimensional grid) and the implementation of this
+robust backfitting in `RBF::backf.rob`.
 
 We now need a robust alternative to `loess` (specifically, of `predict(
-loess(...) )`). We will write our own function to do this. The following
-function `localM` computes a local M-estimator of regression, using a
-polynomial of 2nd degree. Formally, given:
+loess(...) )`). I wrote our own function (`localM` below) to compute a
+local M-estimator of regression, using a polynomial of 2nd degree and
+Tukey’s loss function. Formally, given:
 
   - the data (in the vectors `x` and `y`);
   - the bandwidth `h`;
@@ -311,14 +303,14 @@ the function `localM` computes the solution `a` to
 
     mean( \rhoprime( (y-a)/sigma), cc=cc) * kernel((x-x_0)/h) = 0
 
-By default, `cc` is chosen to achieve 95% asymptotic efficiency for
-linear regression models with Gaussian errors.
+By default, the tuning parameter `cc` is chosen to achieve 95%
+asymptotic efficiency for linear regression models with Gaussian errors.
 
 Our function `localM` also accepts two additional parameters (`tol` and
 `max.it`) to control the convergence of the weighted least squares
 iterations. The algorithm is initialized using a (kernel) weighted
 (“local”) L1 estimator of regression (also using a 2nd degree
-polynomial).
+polynomial). The function is here:
 
 ``` r
 localM <- function(x0, x, y, sigma, 
@@ -345,13 +337,14 @@ localM <- function(x0, x, y, sigma,
 }
 ```
 
-Using this function, we run the first step of the backfitting algorithm,
-exactly as before, but replacing `predict(loess(...))` with
-`localM(...)`. Note, however, that in this case we need to loop through
-the values of each explanatory variable in the training set (`loess`
-does this internally when we call `predict`). In fact, the function
-`RBF::backf.rob` does this, but the objective of these notes is to do it
-“by hand”.
+We now run the first step of the backfitting algorithm, exactly as
+before, but replacing `predict(loess(...))` with `localM(...)`. Note,
+however, that in this case we need to loop through the values of each
+explanatory variable in the training set to compute the vector `f.hat.1`
+of fitted values for the first component estimate (`loess` does this
+internally when we call `predict`). We could have used the function
+`RBF::backf.rob` that does this, but the objective of these notes is
+show every step of the algorithm “by hand”.
 
 Here is the first pass of the inner loop. The additive model components
 are initialized at zero, and the intercept is estimated using the
