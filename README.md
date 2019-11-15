@@ -38,7 +38,8 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
         [Jupyter Notebook](Example-backfitting.ipynb)).
 - Week 4: Nov 12 / 14
     - Multivariate analysis
-         - Estimation; Outlier detection; Depth; PCA.
+         - Elliptical distributions
+         - Estimation; Outlier detection; PCA.
 - Week 5: Nov 19 / 21
     - Inference: asymptotics; bootstrap; prediction (AIC?)
 - Week 6: Nov 26 / 28
