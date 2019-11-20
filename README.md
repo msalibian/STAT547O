@@ -26,7 +26,10 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
     - Reference: Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa)
 - Week 2: Oct 29 / 31
     - M-estimators of scale; S-estimators of regression; MM-estimators.
-        - Reference: Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa)
+        - Reference: Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa);
+        SB and Zamar (2004) Uniform asymptotics for robust location estimates when the scale is unknown,
+        *The Annals of Statistics*, 32(4):1434-1447, [DOI](https://doi.org/10.1214/009053604000000544);
+        Omelka and SB (2010) Uniform asymptotics for S- and MM-regression estimators, *Annals of the Institute of Statistical Mathematics*, 62(5):897–927, [DOI](https://doi.org/10.1007/s10463-008-0189-x).
     - Non-parametric regression;  Kernel smoothers.
         - References: Boente, Martinez and SB (2017) Robust estimators for
           additive models using backfitting. *Journal of Nonparametric
@@ -69,9 +72,12 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
             - References: Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
 - Week 5: Nov 19 / 21
      - Principal Components Analysis
-        - References: Seber (1984), *Multivariate Observations*, Wiley; Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
+        - References: Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
     - Inference: asymptotics; bootstrap;
-        - References:
+        - References: SB & Zamar (2002) Bootrapping robust estimates of regression,
+        *The Annals of Statistics*, 30(2), 556-582 [DOI](https://doi.org/10.1214/aos/1021379865);
+        SB, Van Aelst, & Willems (2008) Fast and robust bootstrap, *Statistical
+        Methods and Applications*, 17(1): 41-71. [DOI](https://doi.org/10.1007/s10260-007-0048-6).
 - Week 6: Nov 26 / 28
     - Functional Data Analysis
          - FPCA; Outlier detection / Depth;
