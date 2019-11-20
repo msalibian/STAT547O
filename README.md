@@ -23,25 +23,37 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
     - M-estimators of scale; S-estimators of regression.
         - [Lecture 2 non-technical notes](Lecture2.md) (source available as
             [R Markdown](Lecture2.Rmd)).
+    - Reference: Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa)
 - Week 2: Oct 29 / 31
     - M-estimators of scale; S-estimators of regression; MM-estimators.
+        - Reference: Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa)
     - Non-parametric regression;  Kernel smoothers.
+        - References:
     - Brief intro to additive models / curse of dimensionality.
+        - References:
 - Week 3: Nov 5 / 7
-    - [Practical / computational digression](Simple_examples.md) (source available as
+    - Algorithms for M-, S- and MM-regresssion estimators.
+        - References:
+    - Practical / computational digression
+        - [Computation by hand](Simple_examples.md) (source available as
         [R Markdown](Simple_examples.Rmd) and the corresponding sandbox as a
         [Jupyter Notebook](Simple_examples.ipynb)).
-    - Algorithms for M-, S- and MM-regresssion estimators.
     - Additive models  + Splines.
         - [Backfitting by hand](Example-backfitting.md) (source available as
         [R Markdown](Example-backfitting.Rmd) and the corresponding sandbox as a
         [Jupyter Notebook](Example-backfitting.ipynb)).
+        - References:
 - Week 4: Nov 12 / 14
     - Multivariate analysis
          - Elliptical distributions
+            - References:
          - Estimation; Outlier detection; PCA.
+            - References:
 - Week 5: Nov 19 / 21
-    - Inference: asymptotics; bootstrap; prediction (AIC?)
+     - Principal Components Analysis
+        - References:
+    - Inference: asymptotics; bootstrap;
+        - References:
 - Week 6: Nov 26 / 28
     - Functional Data Analysis
          - FPCA; Outlier detection / Depth;
