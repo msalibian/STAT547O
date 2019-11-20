@@ -28,12 +28,24 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
     - M-estimators of scale; S-estimators of regression; MM-estimators.
         - Reference: Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa)
     - Non-parametric regression;  Kernel smoothers.
-        - References:
+        - References: Boente, Martinez and SB (2017) Robust estimators for
+          additive models using backfitting. *Journal of Nonparametric
+          Statistics*. 29:744-767:
+          [DOI](https://doi.org/10.1080/10485252.2017.1369077);
+          Boente and Fraiman (1989), Robust nonparametric regression estimation,
+          *Journal of Multivariate Analysis*, 29(2): 180-198,
+          [DOI](https://doi.org/10.1016/0047-259X(89)90023-7);
+         Hardle.  (1984). Robust regression function estimation, *Journal of Multivariate
+         Analysis*,  14(2): 169-180, [DOI](
+         https://doi.org/10.1016/0047-259X(84)90003-4);
+         Welsh, A. (1996). Robust estimation of smooth regression and spread functions and their derivatives. *Statistica Sinica*, 6(2), 347-366. [JSTOR](https://www.jstor.org/stable/24306020);
     - Brief intro to additive models / curse of dimensionality.
-        - References:
+        - References: Hastie and Tibshirani (1990) *Generalized Additive Models*, Chapman and Hall.
 - Week 3: Nov 5 / 7
-    - Algorithms for M-, S- and MM-regresssion estimators.
-        - References:
+    - Algorithms for M-, S- and MM-regression estimators.
+        - Reference: SB & Yohai (2006) A Fast Algorithm for S-Regression Estimates, *Journal of
+          Computational and Graphical Statistics*, 15:2, 414-427, [DOI](https://doi.org/10.1198/106186006X113629);
+          Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa)
     - Practical / computational digression
         - [Computation by hand](Simple_examples.md) (source available as
         [R Markdown](Simple_examples.Rmd) and the corresponding sandbox as a
@@ -42,16 +54,22 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
         - [Backfitting by hand](Example-backfitting.md) (source available as
         [R Markdown](Example-backfitting.Rmd) and the corresponding sandbox as a
         [Jupyter Notebook](Example-backfitting.ipynb)).
-        - References:
+        - References: Boente, Martinez and SB (2017) Robust estimators for
+          additive models using backfitting. *Journal of Nonparametric
+          Statistics*. 29:744-767:
+          [DOI](https://doi.org/10.1080/10485252.2017.1369077);
+           Tharmaratnam, Claeskens, Croux & SB (2010) S-Estimation for Penalized Regression Splines, *Journal of Computational and Graphical Statistics*, 19:3, 609-625, [DOI](https://doi.org/10.1198/jcgs.2010.08149)
 - Week 4: Nov 12 / 14
     - Multivariate analysis
          - Elliptical distributions
-            - References:
+            - References: Boente, SB and Tyler,  (2014). A characterization of elliptical distributions and some optimality properties of principal components for functional data,  *Journal of Multivariate Analysis*, 131:254-264, [DOI](https://doi.org/10.1016/j.jmva.2014.07.006);
+            Paindaveine, (2006), Elliptical Symmetry, *Encyclopedia of Environmetrics*,
+            [DOI](https://doi.org/10.1002/9780470057339.vnn081).
          - Estimation; Outlier detection; PCA.
-            - References:
+            - References: Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
 - Week 5: Nov 19 / 21
      - Principal Components Analysis
-        - References:
+        - References: Seber (1984), *Multivariate Observations*, Wiley; Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
     - Inference: asymptotics; bootstrap;
         - References:
 - Week 6: Nov 26 / 28
