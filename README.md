@@ -42,6 +42,7 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
          Analysis*,  14(2): 169-180, [DOI](
          https://doi.org/10.1016/0047-259X(84)90003-4);
          Welsh, A. (1996). Robust estimation of smooth regression and spread functions and their derivatives. *Statistica Sinica*, 6(2), 347-366. [JSTOR](https://www.jstor.org/stable/24306020);
+         Hardle, Muller, Sperlich and Werwatz (2004) *Nonparametric and semiparametric models*, Springer, [UBC link](http://tinyurl.com/rn7z29x).
     - Brief intro to additive models / curse of dimensionality.
         - References: Hastie and Tibshirani (1990) *Generalized Additive Models*, Chapman and Hall.
 - Week 3: Nov 5 / 7
@@ -61,7 +62,8 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
           additive models using backfitting. *Journal of Nonparametric
           Statistics*. 29:744-767:
           [DOI](https://doi.org/10.1080/10485252.2017.1369077);
-           Tharmaratnam, Claeskens, Croux & SB (2010) S-Estimation for Penalized Regression Splines, *Journal of Computational and Graphical Statistics*, 19:3, 609-625, [DOI](https://doi.org/10.1198/jcgs.2010.08149)
+           Tharmaratnam, Claeskens, Croux & SB (2010) S-Estimation for Penalized Regression Splines, *Journal of Computational and Graphical Statistics*, 19:3, 609-625, [DOI](https://doi.org/10.1198/jcgs.2010.08149);
+           Ruppert, Wand and Carroll (2003) *Semiparametric regression*, Cambridge University Press, [UBC link](http://tinyurl.com/qtdua46).
 - Week 4: Nov 12 / 14
     - Multivariate analysis
          - Elliptical distributions
