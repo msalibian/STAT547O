@@ -145,3 +145,94 @@ c(la.hat[2] - qnorm(.975)*sqrt(2*la.hat[2]^2/n),
 ```
 
     ## [1] 2.677155 3.982405
+
+For an M-estimator
+------------------
+
+``` r
+set.seed(123456)
+n <- 150
+ep <- .1
+n0 <- floor(n*(1-ep))
+x <- c(rnorm(n0), rnorm(n-n0, mean=5, sd=.1))
+# mu0 = 0
+mean(x)
+```
+
+    ## [1] 0.4590433
+
+``` r
+( si.hat <- mad(x) ) 
+```
+
+    ## [1] 1.299817
+
+``` r
+# M-estimator
+max.it <- 100
+mu.hat <- median(x)
+cc <- RobStatTM::lmrobdet.control(family='bisquare', efficiency=.95)$tuning.psi
+tol <- 1e-7
+mu.old <- mu.hat + 10*tol
+j <- 0
+while( (j  < max.it) & (abs(mu.old - mu.hat) > tol) ) {
+  mu.old <- mu.hat
+  re <- (x - mu.hat) / si.hat
+  w <- RobStatTM::rhoprime(re, family='bisquare', cc=cc) / re
+  mu.hat <- sum(w * x ) / sum(w)
+  j <- j + 1
+  print(c(j, mu.hat))
+}
+```
+
+    ## [1] 1.00000000 0.03493672
+    ## [1] 2.00000000 0.02881979
+    ## [1] 3.00000000 0.02758077
+    ## [1] 4.0000000 0.0273301
+    ## [1] 5.00000000 0.02727939
+    ## [1] 6.00000000 0.02726914
+    ## [1] 7.00000000 0.02726706
+    ## [1] 8.00000000 0.02726664
+    ## [1] 9.00000000 0.02726656
+
+``` r
+(mu.hat)
+```
+
+    ## [1] 0.02726656
+
+``` r
+re <- (x - mu.hat)/si.hat
+w <- RobStatTM::rhoprime(re, family='bisquare', cc=cc) / re
+tmp1 <- RobStatTM::rhoprime(re, family='bisquare', cc=cc)
+tmp2 <- RobStatTM::rhoprime2(re, family='bisquare', cc=cc)
+wprime <- (tmp1 - tmp2*re)/re^2
+swp <- sum(wprime)
+wwprime <- ( wprime * sum(w) - wprime * swp ) / ( sum(w) )^2
+(corr.f <- 1 / ( 1 - sum( wwprime * x ) ) )
+```
+
+    ## [1] 1.349486
+
+``` r
+B <- 500
+mu.hat.b <- vector('numeric', B)
+set.seed(123456)
+for(j in 1:B) {
+  ii <- sample(n, repl=TRUE)
+  mu.hat.b[j] <- sum( w[ii] * x[ii] ) / sum( w[ii] )
+}
+# boxplot( corr.f*(mu.hat.b - mu.hat) )
+uu <- quantile( corr.f*(mu.hat.b - mu.hat), c(.025, .975))
+c( mu.hat - uu[2], mu.hat - uu[1])
+```
+
+    ##      97.5%       2.5% 
+    ## -0.1730833  0.2377009
+
+``` r
+c( mean(x) - qnorm(.975)*sd(x)/sqrt(n), 
+   mean(x) + qnorm(.975)*sd(x)/sqrt(n) )
+```
+
+    ## [1] 0.1724467 0.7456399
