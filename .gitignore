@@ -37,6 +37,4 @@ vignettes/*.pdf
 rsconnect/
 .Rproj.user
 
-*_files/
-
 *checkpoints*
