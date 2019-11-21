@@ -1,0 +1,67 @@
+STAT547O - Bootstrap notes
+================
+Matias Salibian-Barrera
+2019-11-20
+
+#### LICENSE
+
+These notes are released under the “Creative Commons
+Attribution-ShareAlike 4.0 International” license. See the
+**human-readable version**
+[here](https://creativecommons.org/licenses/by-sa/4.0/) and the **real
+thing**
+[here](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
+
+# DRAFT (Read at your own risk)
+
+## Bootstrap
+
+``` r
+n <- 200
+p <- 2
+# create a population covariance matrix for the example
+set.seed(123)
+u <- qr.Q(qr(matrix(rnorm(p*p), p, p)))
+la <- c(12, 3) # c(3, 1)
+sigma <- u %*% diag(la) %*% t(u)
+
+set.seed(123)
+x <- MASS::mvrnorm(n=n, mu=rep(0,p), Sigma=sigma)
+la.hat <- svd(cov(x))$d
+
+B <- 500
+la.hat.b <- array(0, dim=c(B, p))
+set.seed(123)
+for(j in 1:B) {
+  ii <- sample(n, repl=TRUE)
+  la.hat.b[j, ] <- svd( cov(x[ii,]) )$d
+}
+
+plot(la.hat.b, pch=19, col='gray')#, xlim=c(-5, 5), ylim=c(-5, 5))
+la.mu <- colMeans(la.hat.b)
+points(la.mu[1], la.mu[2], col='red', pch=19, cex=1.2)
+
+aa <- var(la.hat.b) # 2*diag(la.hat)/n
+set.seed(123)
+xx <- ellipse::ellipse(aa, centre=la.mu)
+lines(xx, cex=.7, col='darkgreen', lwd=3)
+u <- svd(aa)$u
+u1 <- u[,1]*la.hat[1]*3/sqrt(n) + la.mu 
+arrows(la.mu[1], la.mu[2], u1[1], u1[2], col='darkgreen', lwd=3)
+u2 <- u[,2]*la.hat[2]*3/sqrt(n) + la.mu 
+arrows(la.mu[1], la.mu[2], u2[1], u2[2], col='darkgreen', lwd=3)
+```
+
+![](Bootstrap_files/figure-gfm/block1-1.png)<!-- -->
+
+``` r
+diag( var(la.hat.b) )
+```
+
+    ## [1] 1.23397784 0.07052625
+
+``` r
+( 2*la.hat^2/n )
+```
+
+    ## [1] 1.14014814 0.08835225
