@@ -71,15 +71,24 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
             Paindaveine, (2006), Elliptical Symmetry, *Encyclopedia of Environmetrics*,
             [DOI](https://doi.org/10.1002/9780470057339.vnn081).
          - Estimation; Outlier detection; PCA.
+              - References: Maronna *et al.* (2018), *Robust Statistics: Theory and Methods, 2nd Edition*, Wiley. [UBC Library link](http://tinyurl.com/wyfryxa)
+        - Functional Data Analysis:
             - References: Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
 - Week 5: Nov 19 / 21
      - Principal Components Analysis
-        - References: Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
+        - References: Boente, SB and Tyler,  (2014). A characterization of elliptical distributions and some optimality properties of principal components for functional data,  *Journal of Multivariate Analysis*, 131:254-264, [DOI](https://doi.org/10.1016/j.jmva.2014.07.006);
+         Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
     - Inference: asymptotics; bootstrap;
         - References: SB & Zamar (2002) Bootrapping robust estimates of regression,
         *The Annals of Statistics*, 30(2), 556-582 [DOI](https://doi.org/10.1214/aos/1021379865);
         SB, Van Aelst, & Willems (2008) Fast and robust bootstrap, *Statistical
-        Methods and Applications*, 17(1): 41-71. [DOI](https://doi.org/10.1007/s10260-007-0048-6).
+        Methods and Applications*, 17(1): 41-71. [DOI](https://doi.org/10.1007/s10260-007-0048-6);
+        Christmann, SB, Van Aelst. (2013) Qualitative Robustness of Bootstrap Approximations for Kernel Based Methods.
+        *Robustness and Complex Data Structures*, Berlin, Heidelberg: Springer Berlin Heidelberg; 263–278.
+        [DOI](http://dx.doi.org/10.1007/978-3-642-35494-6_16).
+    - [Bootstrap and Fast and Robust Bootstrap by hand](Bootstrap.md)
+        (source available as [R Markdown](Bootstrap.Rmd) and the corresponding
+        sandbox as a [Jupyter Notebook](Bootstrap.ipynb)).
 - Week 6: Nov 26 / 28
     - Functional Data Analysis
          - FPCA; Outlier detection / Depth;
