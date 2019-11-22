@@ -37,16 +37,11 @@ U \Lambda U^T`, where `\Lambda = diag(12, 3)`.
 
 ``` r
 p <- 2
-# create a population covariance matrix for the example
 set.seed(123456)
-u <- qr.Q(qr(matrix(rnorm(p*p), p, p)))
-la <- c(12, 3) # c(3, 1)
-( sigma <- u %*% diag(la) %*% t(u) )
+u <- qr.Q( qr( matrix(rnorm(p*p), p, p) ) )
+la <- c(12, 3) 
+sigma <- u %*% diag(la) %*% t(u) 
 ```
-
-    ##           [,1]      [,2]
-    ## [1,] 11.110840 -2.685487
-    ## [2,] -2.685487  3.889160
 
 We now take the random sample of `n = 200` observations:
 
@@ -56,7 +51,7 @@ set.seed(123456)
 x <- MASS::mvrnorm(n=n, mu=rep(0,p), Sigma=sigma)
 ```
 
-The estimated eigenvalues of the true covariance matrix `\Sigma` are
+The estimated eigenvalues of the true covariance matrix `\Sigma` are:
 
 ``` r
 ( la.hat <- svd(cov(x))$d )
@@ -64,14 +59,15 @@ The estimated eigenvalues of the true covariance matrix `\Sigma` are
 
     ## [1] 11.69325  3.32978
 
-To construct 95% confidence intervals for the each of the true
-eigenvalues, or build a 95% confidence region for both of them
-simultaneously we need to estimate the distribution of the random vector
-`(\hat{\lambda}_1, \hat{\lambda}_2)^T`. The non-parametric bootstrap
-(Efron 1979) estimator for this distribution. is the “empirical” (Monte
-Carlo) distribution obtained by re-computing the estimator on `B`
-samples obtained from the original sample, with replacement. In this
-example we will use `B = 500` bootstrap samples.
+(recall that the true ones are 12, 3). To construct 95% confidence
+intervals for the each of the true eigenvalues, or build a 95%
+confidence region for both of them simultaneously we need to estimate
+the distribution of the random vector `(\hat{\lambda}_1,
+\hat{\lambda}_2)^T`. The non-parametric bootstrap (Efron 1979) estimator
+for this distribution. is the “empirical” (Monte Carlo) distribution
+obtained by re-computing the estimator on `B` samples obtained from the
+original sample, with replacement. In this example we will use `B = 500`
+bootstrap samples.
 
 For each sample we will compute the eigenvalues of the corresponding
 sample covariance matrix. The empirical distribution of these 500
@@ -140,36 +136,6 @@ c(la.mu[2] - qs[2], la.mu[2] - qs[1])
 
     ## [1] 2.577254 4.027706
 
-<!-- Another way to look at it, using boxplots: -->
-
-<!-- ```{r marg2} -->
-
-<!-- boxplot(la.hat.b, col='gray80') -->
-
-<!-- points(1, la[1], pch=19, cex=1.75, col='steelblue') -->
-
-<!-- points(2, la[2], pch=19, cex=1.75, col='steelblue') -->
-
-<!-- ``` -->
-
-<!-- **Sanity check**: we do know the asymptotic distribution of each -->
-
-<!-- eigenvalue estimator ( `N(\lambda_j, 2*\lambda_j^2 / n)` ).  -->
-
-<!-- <!-- ```{r sanity} -->
-
-–\> <!-- <!-- diag( var(la.hat.b) ) --> –\> <!-- <!-- 2*la.hat^2/n -->
-–\> <!-- <!-- ``` --> –\>
-<!-- The corresponding asymptotic CIs are: --> <!-- ```{r asym1} -->
-<!-- c(la.hat[1] - qnorm(.975)*sqrt(2*la.hat[1]^2/n),  -->
-<!--   la.hat[1] + qnorm(.975)*sqrt(2*la.hat[1]^2/n) ) -->
-
-<!-- c(la.hat[2] - qnorm(.975)*sqrt(2*la.hat[2]^2/n),  -->
-
-<!--   la.hat[2] + qnorm(.975)*sqrt(2*la.hat[2]^2/n) ) -->
-
-<!-- ``` -->
-
 ### Fast and Robust Bootstrap for an M-estimator of location
 
 When bootstrapping robust estimators with data that may contain ayptical
@@ -188,7 +154,8 @@ We described this method in class. Here is an application to the
 simplest M-estimator of location (where the residual scale is assumed
 known).
 
-We first generate a simple data set, with 10% of oultiers:
+We first generate a simple data set with `n = 50`, which includes 10% of
+outliers following a `N(0, 0.01)` distribution:
 
 ``` r
 set.seed(123456)
@@ -198,17 +165,19 @@ n0 <- floor(n*(1-ep))
 x <- c(rnorm(n0), rnorm(n-n0, mean=5, sd=.1))
 ```
 
-The true location parameter is 0. The sample mean is `{r dr2 mean(x)` We
-now compute a robust M-estimator using a bisquare score function (tuned
-to achieve 90% efficiency if no outliers were present in the data).
+The true location parameter is 0, the sample mean is 0.648 and the
+sample median is 0.18. We now compute a robust M-estimator using a
+bisquare score function (tuned to achieve 90% efficiency if no outliers
+were present in the data).
 
 ``` r
 si.hat <- mad(x) 
 max.it <- 100
 mu.hat <- median(x)
-cc0 <- RobStatTM::lmrobdet.control(family='bisquare', efficiency=.95)$tuning.psi
+cc0 <- RobStatTM::lmrobdet.control(family='bisquare', 
+                                   efficiency=.9)$tuning.psi
 rhoprime <- function(r, family='bisquare', cc=cc0) {
-return(RobStatTM::rhoprime(r, family=family, cc=cc) )
+  return(RobStatTM::rhoprime(r, family=family, cc=cc) )
 }
 tol <- 1e-7
 mu.old <- mu.hat + 10*tol
@@ -222,7 +191,7 @@ while( (j  < max.it) & (abs(mu.old - mu.hat) > tol) ) {
 }
 ```
 
-The M-estimator of location is 0.29. We now compute the correction
+The M-estimator of location is 0.19. We now compute the correction
 factor to account for the reduction in variability that results from the
 one-step approximation.
 
@@ -237,9 +206,10 @@ wwprime <- ( wprime * sum(w) - wprime * swp ) / ( sum(w) )^2
 corr.f <- 1 / ( 1 - sum( wwprime * x ) ) 
 ```
 
-We now compute the 500 bootstrapped M-estimators. Note that each of them
-only involves computing a weighted average of the form
-`sum(w*x)/sum(w)`.
+We now compute the 500 bootstrapped M-estimators. Note that, instead of
+running the above iterations to compute the M-estimator with each
+bootstrap sample, we only need to compute a weighted average of the form
+`sum(w*x)/sum(w)`, which is very fast.
 
 ``` r
 B <- 500
@@ -256,18 +226,17 @@ distribution to construct the 95% confidence interval for the true
 location parameter:
 
 ``` r
-# boxplot( corr.f*(mu.hat.b - mu.hat) )
 uu <- quantile( corr.f*(mu.hat.b - mu.hat), c(.025, .975))
 c( mu.hat - uu[2], mu.hat - uu[1])
 ```
 
     ##      97.5%       2.5% 
-    ## -0.1417883  0.6879522
+    ## -0.1825118  0.5520503
+
+### Using the mean and the median
 
 Note that the classical 95% confidence interval based on the sample mean
-fails to contain the true value (zero) and that a 95% confidence
-interval based on the median would require an estimate of the density of
-the error distribution.
+fails to contain the true value (zero):
 
 ``` r
 c(mean(x) - qnorm(.975) * sd(x)/sqrt(n), 
@@ -276,9 +245,26 @@ mean(x) + qnorm(.975) * sd(x)/sqrt(n))
 
     ## [1] 0.1593878 1.1368002
 
+A 95% confidence interval based on the median would require an estimate
+of the density of the error distribution. Using a kernel estimator we
+get:
+
 ``` r
-names( summary(quantreg::rq(x ~ 1)) )
+a <- summary(quantreg::rq(x ~ 1), se='ker')$coef
+c( a[1] - qnorm(.975) * a[2], a[1] + qnorm(.975) * a[2])
 ```
 
-    ## [1] "call"         "terms"        "coefficients" "residuals"   
-    ## [5] "rdf"          "tau"
+    ## [1] -0.6402878  0.9823529
+
+Using bootstrap:
+
+``` r
+a <- summary(quantreg::rq(x ~ 1), se='boot')$coef
+c( a[1] - qnorm(.975) * a[2], a[1] + qnorm(.975) * a[2])
+```
+
+    ## [1] -0.3495882  0.6916533
+
+Note that the two confidence intervals above are noticeably wider than
+those computed with the M-estimator, reflecting the gain in efficiency
+obtained by using an M-estimator instead of the median.

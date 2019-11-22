@@ -43,11 +43,10 @@ bi-variate random vector is
 
 ```{r block1}
 p <- 2
-# create a population covariance matrix for the example
 set.seed(123456)
-u <- qr.Q(qr(matrix(rnorm(p*p), p, p)))
-la <- c(12, 3) # c(3, 1)
-( sigma <- u %*% diag(la) %*% t(u) )
+u <- qr.Q( qr( matrix(rnorm(p*p), p, p) ) )
+la <- c(12, 3) 
+sigma <- u %*% diag(la) %*% t(u) 
 ```
 
 We now take the random sample of `n = 200` observations:
@@ -56,10 +55,11 @@ n <- 200
 set.seed(123456)
 x <- MASS::mvrnorm(n=n, mu=rep(0,p), Sigma=sigma)
 ```
-The estimated eigenvalues of the true covariance matrix `\Sigma` are
+The estimated eigenvalues of the true covariance matrix `\Sigma` are:
 ```{r block3}
 ( la.hat <- svd(cov(x))$d )
 ```
+(recall that the true ones are `r round(la, 3)`). 
 To construct 95% confidence intervals for the each of the true eigenvalues,
 or build a 95% confidence region for both of them simultaneously we need
 to estimate the distribution of the random 
@@ -127,27 +127,6 @@ and for the second eigenvalue:
 qs <- as.numeric( quantile(la.hat.b[,2] - la.mu[2], c(.025, .975)) )
 c(la.mu[2] - qs[2], la.mu[2] - qs[1])
 ```
-<!-- Another way to look at it, using boxplots: -->
-<!-- ```{r marg2} -->
-<!-- boxplot(la.hat.b, col='gray80') -->
-<!-- points(1, la[1], pch=19, cex=1.75, col='steelblue') -->
-<!-- points(2, la[2], pch=19, cex=1.75, col='steelblue') -->
-<!-- ``` -->
-
-<!-- **Sanity check**: we do know the asymptotic distribution of each -->
-<!-- eigenvalue estimator ( `N(\lambda_j, 2*\lambda_j^2 / n)` ).  -->
-<!-- <!-- ```{r sanity} --> -->
-<!-- <!-- diag( var(la.hat.b) ) --> -->
-<!-- <!-- 2*la.hat^2/n --> -->
-<!-- <!-- ``` --> -->
-<!-- The corresponding asymptotic CIs are: -->
-<!-- ```{r asym1} -->
-<!-- c(la.hat[1] - qnorm(.975)*sqrt(2*la.hat[1]^2/n),  -->
-<!--   la.hat[1] + qnorm(.975)*sqrt(2*la.hat[1]^2/n) ) -->
-
-<!-- c(la.hat[2] - qnorm(.975)*sqrt(2*la.hat[2]^2/n),  -->
-<!--   la.hat[2] + qnorm(.975)*sqrt(2*la.hat[2]^2/n) ) -->
-<!-- ``` -->
 
 ### Fast and Robust Bootstrap for an M-estimator of location
 
@@ -170,7 +149,9 @@ We described this method in class. Here is an application
 to the simplest M-estimator of location (where the residual
 scale is assumed known). 
 
-We first generate a simple data set, with 10% of oultiers:
+We first generate a simple data set
+with `n = 50`, which includes 10% of outliers 
+following a `N(0, 0.01)` distribution:
 ```{r draft1}
 set.seed(123456)
 n <- 50
@@ -178,10 +159,9 @@ ep <- .1
 n0 <- floor(n*(1-ep))
 x <- c(rnorm(n0), rnorm(n-n0, mean=5, sd=.1))
 ```
-The true location parameter is 0. The sample mean is
-```{r dr2
-mean(x)
-```
+The true location parameter is 0, the sample mean is
+`r round(mean(x), 3)` and the sample median 
+is `r round(median(x), 3)`.
 We now compute a robust M-estimator using a bisquare score
 function (tuned to achieve 90% efficiency if no outliers 
 were present in the data). 
@@ -189,9 +169,10 @@ were present in the data).
 si.hat <- mad(x) 
 max.it <- 100
 mu.hat <- median(x)
-cc0 <- RobStatTM::lmrobdet.control(family='bisquare', efficiency=.95)$tuning.psi
+cc0 <- RobStatTM::lmrobdet.control(family='bisquare', 
+                                   efficiency=.9)$tuning.psi
 rhoprime <- function(r, family='bisquare', cc=cc0) {
-return(RobStatTM::rhoprime(r, family=family, cc=cc) )
+  return(RobStatTM::rhoprime(r, family=family, cc=cc) )
 }
 tol <- 1e-7
 mu.old <- mu.hat + 10*tol
@@ -219,9 +200,12 @@ wwprime <- ( wprime * sum(w) - wprime * swp ) / ( sum(w) )^2
 corr.f <- 1 / ( 1 - sum( wwprime * x ) ) 
 ```
 We now compute the 500 bootstrapped M-estimators. 
-Note that each of them only involves computing
-a weighted average of the form `sum(w*x)/sum(w)`. 
-```{r boot}
+Note that, instead of running the above iterations to
+compute the M-estimator with each bootstrap sample, 
+we only need to compute 
+a weighted average of the form `sum(w*x)/sum(w)`,
+which is very fast.
+```{r boot, pretty=TRUE}
 B <- 500
 mu.hat.b <- vector('numeric', B)
 set.seed(123456)
@@ -234,19 +218,35 @@ Next we use the quantiles of the centered and
 corrected bootstrap distribution to construct the
 95% confidence interval for the true location parameter:
 ```{r boot2}
-# boxplot( corr.f*(mu.hat.b - mu.hat) )
 uu <- quantile( corr.f*(mu.hat.b - mu.hat), c(.025, .975))
 c( mu.hat - uu[2], mu.hat - uu[1])
 ```
+
+### Using the mean and the median
+
 Note that the classical 95% confidence interval based
-on the sample mean fails to contain the true value (zero)
-and that a 95% confidence interval based on the median
-would require an estimate of the density of the 
-error distribution. 
+on the sample mean fails to contain the true value (zero):
 ```{r class.ci}
 c(mean(x) - qnorm(.975) * sd(x)/sqrt(n), 
 mean(x) + qnorm(.975) * sd(x)/sqrt(n))
 ```
+A 95% confidence interval based on the median
+would require an estimate of the density of the 
+error distribution. Using a kernel estimator
+we get:
 ```{r qr1}
-names( summary(quantreg::rq(x ~ 1)) )
+a <- summary(quantreg::rq(x ~ 1), se='ker')$coef
+c( a[1] - qnorm(.975) * a[2], a[1] + qnorm(.975) * a[2])
 ```
+Using bootstrap:
+```{r qr2}
+a <- summary(quantreg::rq(x ~ 1), se='boot')$coef
+c( a[1] - qnorm(.975) * a[2], a[1] + qnorm(.975) * a[2])
+```
+Note that the two confidence intervals above are 
+noticeably wider than those computed with the M-estimator,
+reflecting the gain in efficiency obtained by using an
+M-estimator instead of the median. 
+
+
+
