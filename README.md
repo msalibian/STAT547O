@@ -75,7 +75,8 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
         - Functional Data Analysis:
             - References: Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
 - Week 5: Nov 19 / 21
-     - Principal Components Analysis
+     - Principal Components Analysis (including brief mention to
+         methods for Functional Data PCA).
         - References: Boente, SB and Tyler,  (2014). A characterization of elliptical distributions and some optimality properties of principal components for functional data,  *Journal of Multivariate Analysis*, 131:254-264, [DOI](https://doi.org/10.1016/j.jmva.2014.07.006);
          Boente & SB (2015) S-Estimators for Functional Principal Component Analysis, *Journal of the American Statistical Association*, 110:511, 1100-1111, [DOI](https://doi.org/10.1080/01621459.2014.946991).
     - Inference: asymptotics; bootstrap;
@@ -90,10 +91,9 @@ and the **real thing** [here](https://creativecommons.org/licenses/by-sa/4.0/leg
         (source available as [R Markdown](Bootstrap.Rmd) and the corresponding
         sandbox as a [Jupyter Notebook](Bootstrap.ipynb)).
 - Week 6: Nov 26 / 28
-    - Functional Data Analysis
-         - FPCA; Outlier detection / Depth;
-        - Regression, classification
-- Somewhat open problems
+    - Robust Ensemble methods for regression
+    - GAM + GAPLM
+- Other topics:
     - Random / Mixed effects models
     - Spatial statistics
     - State-space models
